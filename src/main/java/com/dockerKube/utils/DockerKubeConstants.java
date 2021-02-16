@@ -183,6 +183,7 @@ public class DockerKubeConstants {
 	public static final String KUBE_PATH_K8S_SH="deploy/private/setup_k8s.sh";
 	public static final String KUBE_SOLUTION="solution.zip";
 	public static final String KUBE_DEPLOY_SH="deploy.sh";
+	public static final String KUBE_CLIENT_SCRIPT="kubernetes-client-script.py";
 	public static final String KUBE_DEPLOY_ENV_SH="deploy_env.sh";
 	public static final String KUBE_K8S_SH="setup_k8s.sh";
 	public static final String KUBE_BLUEPRINT_JSON="blueprint.json";
