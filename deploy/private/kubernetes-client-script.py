@@ -171,8 +171,8 @@ class Deployment:
 
 def main():
     namespace = input("Enter name of your namespace : ")
-    path_dir = input("Enter path of target directory where .yaml files are places : ")
-    #path_dir = "/home/sajid/kubernetes-client-python/solution"
+    #path_dir = input("Enter path of target directory where .yaml files are places : ")
+    path_dir = os.getcwd()
     deployment = Deployment(path_dir=path_dir)
     output = deployment.get_namespaces()
 
@@ -203,3 +203,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

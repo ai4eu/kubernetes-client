@@ -671,16 +671,6 @@ public class ParseJSON {
 							if (key != null && key.equalsIgnoreCase(DockerKubeConstants.IMAGE)) {
 								imageName = (String) pair.getValue();
 								String result[] = imageName.split("/");
-								System.out.println("\n");
-								System.out.println("\n");
-								System.out.println("\n");
-								
-								System.out.println(result[1]);
-								System.out.println(result[2]);
-								
-								System.out.println("\n");
-								System.out.println("\n");
-								
 								
 								/**
 								 * Temporary Solution
