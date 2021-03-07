@@ -92,7 +92,7 @@ public class DockerKubeConstants {
 	
 	public static final String APPLICATION_JSON="application/json";
 	public static final String BLUEPRINT_CONTAINER_NAME= "BluePrintContainer";
-	public static final String BLUEPRINT_MODELCONNECTOR_NAME= "modelconnector";
+	public static final String BLUEPRINT_MODELCONNECTOR_NAME= "ochestrator";
 	public static final String SINGLE_CONTAINER_NAME= "SingleImageContainer";
 	public static final String PROBE_CONTAINER_NAME= "probe";
 	public static final String NGINX_CONTAINER_NAME= "nginx";
@@ -187,6 +187,8 @@ public class DockerKubeConstants {
 	public static final String KUBE_PATH_CLIENT_SCRIPT="deploy/private/kubernetes-client-script.py";
 	public static final String KUBE_DOC_FILE_PATH="docs/deploy-in-private-k8s.rst";
 	public static final String KUBE_DOC_FILE="deploy-in-private-k8s.rst";
+	public static final String KUBE_DEPLOYMENT_FILE_PATH="docs/deployment_readme.docx";
+	public static final String KUBE_DEPLOYMENT_FILE="deployment_readme.docx";
 	public static final String KUBE_DEPLOY_ENV_SH="deploy_env.sh";
 	public static final String KUBE_K8S_SH="setup_k8s.sh";
 	public static final String KUBE_BLUEPRINT_JSON="blueprint.json";
