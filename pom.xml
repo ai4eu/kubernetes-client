@@ -5,7 +5,7 @@
 
 	<groupId>com.dockerKube</groupId>
 	<artifactId>kubernetes-client</artifactId>
-	<version>3.0.6-SAJID</version>
+	<version>3.0.7-SAJID</version>
 	<packaging>jar</packaging>
 
 	<name>kubernetes-client</name>

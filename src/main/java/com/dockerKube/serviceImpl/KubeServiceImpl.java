@@ -67,7 +67,7 @@ import org.acumos.cds.domain.MLPCodeNamePair;
 @Service
 public class KubeServiceImpl implements KubeService {
 
-	HashMap<String, String> deployments = new HashMap<String, String>();
+	HashMap<String, String> deployments;
 
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -91,6 +91,7 @@ public class KubeServiceImpl implements KubeService {
 			String solutionToolKitType) throws Exception {
 		logger.debug("singleSolutionDetails start");
 		logger.debug("imageTag " + imageTag + " singleModelPort " + singleModelPort);
+		deployments = new HashMap<String, String>();
 		getSolutionRevisionMap(dBean, solutionToolKitType);
 
 		byte[] solutionZip = null;
@@ -104,6 +105,7 @@ public class KubeServiceImpl implements KubeService {
 
 	public byte[] compositeSolutionDetails(DeploymentBean dBean, String solutionToolKitType) throws Exception {
 		logger.debug("compositeSolutionDetails start");
+		deployments  = new HashMap<String, String>();
 		byte[] solutionZip = null;
 		List<ContainerBean> contList = null;
 		ParseJSON parseJson = new ParseJSON();
@@ -743,8 +745,12 @@ public class KubeServiceImpl implements KubeService {
 		ArrayNode containerArrayNode = templateNode.arrayNode();
 		ObjectNode containerNode = objectMapper.createObjectNode();
 		containerNode.put(DockerKubeConstants.NAME_DEP_YML, modelNameYml);
+		/*
+		// We are not using the Proxy image. We are using Image and Tag which is provided during onboarding.
 		containerNode.put(DockerKubeConstants.IMAGE_DEP_YML,
 				cutil.getProxyImageName(imageTag, dBean.getDockerProxyHost(), dBean.getDockerProxyPort()));
+		*/
+		containerNode.put(DockerKubeConstants.IMAGE_DEP_YML, imageTag);
 
 		ArrayNode portsArrayNode = containerNode.arrayNode();
 		ObjectNode portsNode = objectMapper.createObjectNode();
@@ -970,14 +976,8 @@ public class KubeServiceImpl implements KubeService {
 					cutil.getProxyImageName(imageTag, dBean.getDockerProxyHost(), dBean.getDockerProxyPort()));
 		} else if (nodeType != null && nodeType.equalsIgnoreCase(DockerKubeConstants.PROBE_CONTAINER_NAME)) {
 			containerNode.put(DockerKubeConstants.IMAGE_DEP_YML, imageTag);
-		} else {///////////////////////////////////////////////////////////////////////////////////////////////// Take
-				///////////////////////////////////////////////////////////////////////////////////////////// a
-				///////////////////////////////////////////////////////////////////////////////////////////// look
-				///////////////////////////////////////////////////////////////////////////////////////////// on
-				///////////////////////////////////////////////////////////////////////////////////////////// docker
-				///////////////////////////////////////////////////////////////////////////////////////////// image.
-			containerNode.put(DockerKubeConstants.IMAGE_DEP_YML,
-					cutil.getProxyImageName(imageTag, dBean.getDockerProxyHost(), dBean.getDockerProxyPort()));
+		} else {
+			containerNode.put(DockerKubeConstants.IMAGE_DEP_YML, imageTag);
 		}
 
 		if (nodeType != null && nodeType.equalsIgnoreCase(DockerKubeConstants.PROBE_CONTAINER_NAME)) {

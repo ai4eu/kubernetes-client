@@ -12,7 +12,7 @@ class DockerInfo:
         print("")
 
     def update_node_port(self, ports_mapping,
-                         filename="/home/sajid/kubernetes-client-python/solution/dockerinfo.json"):
+                         filename="/home/sajid/Downloads/solution/dockerinfo.json"):
         print("Start updating the docker info Json : ")
         with open(filename, "r") as jsonFile:
             data = json.load(jsonFile)
@@ -30,7 +30,7 @@ class DockerInfo:
 
 
 class Deployment:
-    def __init__(self, start_port=30000, end_port=32767, path_dir="/home/sajid/kubernetes-client-python/solution"):
+    def __init__(self, start_port=30000, end_port=32767, path_dir="/home/sajid/Downloads/solution"):
         self.path_dir = path_dir
         self.start_port = start_port
         self.end_port = end_port
@@ -192,7 +192,8 @@ def main():
             print(deployment.port_mapping)
 
             dockerInfo = DockerInfo()
-            dockerInfo.update_node_port(deployment.port_mapping)
+            dockerfilename = path_dir+"/dockerinfo.json"
+            dockerInfo.update_node_port(deployment.port_mapping, dockerfilename)
 
         else:
             print("Path to the target directory is invalid :  ")
@@ -203,4 +204,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
