@@ -189,9 +189,9 @@ class Deployment:
 
 def main():
     namespace = input("Enter name of your namespace : ")
-    #path_dir = input("Enter path of target directory where .yaml files are places : ")
     path_dir = os.getcwd()
-    deployment = Deployment(path_dir=path_dir)
+    deployment_dir = path_dir + "/deployments"
+    deployment = Deployment(path_dir=deployment_dir)
     output = deployment.get_namespaces()
 
     if deployment.is_valid_namespace(namespace, output):
@@ -210,9 +210,9 @@ def main():
             print(deployment.port_mapping)
 
             dockerInfo = DockerInfo()
-            dockerfilename = path_dir+"/dockerinfo.json"
-            dockerInfo.update_node_port(deployment.port_mapping, dockerfilename)
-
+            dockerfilename = path_dir + "/dockerinfo.json"
+            if os.path.exists(dockerfilename):
+                dockerInfo.update_node_port(deployment.port_mapping, dockerfilename)
         else:
             print("Path to the target directory is invalid :  ")
     else:

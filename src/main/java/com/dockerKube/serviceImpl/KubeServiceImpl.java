@@ -93,8 +93,19 @@ public class KubeServiceImpl implements KubeService {
 		logger.debug("imageTag " + imageTag + " singleModelPort " + singleModelPort);
 		deployments = new HashMap<String, String>();
 		getSolutionRevisionMap(dBean, solutionToolKitType);
-
 		byte[] solutionZip = null;
+		
+		List<ContainerBean> contList = null;
+		ParseJSON parseJson = new ParseJSON();
+		/** Blueprint.json **/
+		ByteArrayOutputStream byteArrayOutputStream = getBluePrintNexus1(dBean.getSolutionId(),
+				dBean.getSolutionRevisionId(), dBean.getCmnDataUrl(), dBean.getCmnDataUser(), dBean.getCmnDataPd(),
+				dBean.getNexusUrl(), dBean.getNexusUserName(), dBean.getNexusPd());
+		logger.debug("byteArrayOutputStream " + byteArrayOutputStream);
+		dBean.setBluePrintjson(byteArrayOutputStream.toString());
+		/** Proto file code **/
+		
+		
 		String solutionYaml = getSingleSolutionYMLFile(imageTag, singleModelPort, dBean);
 		dBean.setSolutionYml(solutionYaml);
 		logger.debug("solutionYaml " + solutionYaml);
@@ -254,6 +265,52 @@ public class KubeServiceImpl implements KubeService {
 		return byteArrayOutputStream;
 	}
 
+
+	
+	public ByteArrayOutputStream getBluePrintNexus1(String solutionId, String revisionId, String datasource,
+			String userName, String dataPd, String nexusUrl, String nexusUserName, String nexusPd) throws Exception {
+		logger.debug(" getBluePrintNexus Start");
+		logger.debug("solutionId " + solutionId);
+		logger.debug("revisionId " + revisionId);
+		List<MLPSolutionRevision> mlpSolutionRevisionList;
+		String solutionRevisionId = revisionId;
+		List<MLPArtifact> mlpArtifactList;
+		String nexusURI = "";
+		String bluePrintStr = "";
+		ByteArrayOutputStream byteArrayOutputStream = null;
+		CommonDataServiceRestClientImpl cmnDataService = getClient(datasource, userName, dataPd);
+		if (null != solutionRevisionId) {
+			// 3. Get the list of Artifiact for the SolutionId and SolutionRevisionId.
+			mlpArtifactList = cmnDataService.getSolutionRevisionArtifacts(solutionId, solutionRevisionId);
+			if (null != mlpArtifactList && !mlpArtifactList.isEmpty()) {
+				nexusURI = mlpArtifactList.stream()
+						.filter(mlpArt -> mlpArt.getArtifactTypeCode()
+								.equalsIgnoreCase(DockerKubeConstants.ARTIFACT_TYPE_PROTO))
+						.findFirst().get().getUri();
+				logger.debug(" Nexus URI : " + nexusURI);
+				if (null != nexusURI) {
+					NexusArtifactClient nexusArtifactClient = nexusArtifactClient(nexusUrl, nexusUserName, nexusPd);
+					byteArrayOutputStream = nexusArtifactClient.getArtifact(nexusURI);
+
+				}
+			}
+			for (MLPArtifact mlpArtifact:mlpArtifactList) 
+			{
+				if (mlpArtifact.getArtifactTypeCode().equals("MI")) 
+				{
+					String protoFolderName = "microservice" + "/" + mlpArtifact.getName();
+				    deployments.put(protoFolderName, byteArrayOutputStream.toString());
+				}
+				
+			}
+				
+		}
+		logger.debug("getBluePrintNexus End byteArrayOutputStream " + byteArrayOutputStream);
+		return byteArrayOutputStream;
+	}
+
+	
+	
 	/**
 	 * getNexusUrlFile method is used to get file from nexus
 	 * 
@@ -565,8 +622,8 @@ public class KubeServiceImpl implements KubeService {
 							String protoFileName = contbean.getProtoUriPath().substring(index + 1);
 							bOutput = new ByteArrayOutputStream(12);
 							bOutput.write(contbean.getProtoUriDetails().getBytes());
-							String protoFolderName = "microservice" + "/" + contbean.getContainerName() + "/"
-									+ "model.proto";
+							String protoFolderName = "microservice" + "/" + contbean.getContainerName()
+									+ ".proto";
 							logger.debug(protoFolderName + "  " + protoFolderName);
 							hmap.put(protoFolderName, bOutput);
 							logger.debug(contbean.getProtoUriPath() + " " + bOutput);
@@ -625,8 +682,8 @@ public class KubeServiceImpl implements KubeService {
 		String serviceYml = getSingleSolutionService(singleModelPort, dBean, modelName);
 		String deploymentYml = getSingleSolutionDeployment(imageTag, dBean, modelName);
 
-		deployments.put("service.yaml", serviceYml);
-		deployments.put("deployment.yaml", deploymentYml);
+		deployments.put("deployments/service.yaml", serviceYml);
+		deployments.put("deployments/deployment.yaml", deploymentYml);
 
 		solutionYaml = serviceYml;
 		solutionYaml = solutionYaml + deploymentYml;
@@ -873,7 +930,7 @@ public class KubeServiceImpl implements KubeService {
 		specNode.set(DockerKubeConstants.PORTS_YML, portsArrayNode);
 		apiRootNode.set(DockerKubeConstants.SPEC_YML, specNode);
 		serviceYml = yamlMapper.writeValueAsString(apiRootNode);
-		deployments.put(((containerName) + "_service.yaml"), serviceYml);
+		deployments.put(("deployments/"+(containerName) + "_service.yaml"), serviceYml);
 		logger.debug("solutionDeployment " + serviceYml);
 		return serviceYml;
 	}
@@ -1123,7 +1180,7 @@ public class KubeServiceImpl implements KubeService {
 		logger.debug("before " + solutionDeployment);
 		solutionDeployment = solutionDeployment.replace("'", "");
 		logger.debug("After " + solutionDeployment);
-		deployments.put(((containerName) + "_deployment.yaml"), solutionDeployment);
+		deployments.put(("deployments/"+(containerName) + "_deployment.yaml"), solutionDeployment);
 		return solutionDeployment;
 	}
 

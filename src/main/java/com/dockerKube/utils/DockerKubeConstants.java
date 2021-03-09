@@ -120,6 +120,7 @@ public class DockerKubeConstants {
 	public static final String DEPLOYMENT_FAILED= "FA";
 	public static final String DATA_BROKER_CSV_FILE= "csv";
 	public static final String ARTIFACT_TYPE_BLUEPRINT= "BP";
+	public static final String ARTIFACT_TYPE_PROTO= "MI";
 	public static final String HTTP_PROPERTY= "https.protocols";
 	public static final String HTTP_PROPERTY_VALUE= "TLSv1";
 	public static final String SSL_DOCKER= "docker";
@@ -187,8 +188,8 @@ public class DockerKubeConstants {
 	public static final String KUBE_PATH_CLIENT_SCRIPT="deploy/private/kubernetes-client-script.py";
 	public static final String KUBE_DOC_FILE_PATH="docs/deploy-in-private-k8s.rst";
 	public static final String KUBE_DOC_FILE="deploy-in-private-k8s.rst";
-	public static final String KUBE_DEPLOYMENT_FILE_PATH="docs/deployment_readme.docx";
-	public static final String KUBE_DEPLOYMENT_FILE="deployment_readme.docx";
+	public static final String KUBE_DEPLOYMENT_FILE_PATH="docs/deployment-readme.txt";
+	public static final String KUBE_DEPLOYMENT_FILE="deployment-readme.txt";
 	public static final String KUBE_DEPLOY_ENV_SH="deploy_env.sh";
 	public static final String KUBE_K8S_SH="setup_k8s.sh";
 	public static final String KUBE_BLUEPRINT_JSON="blueprint.json";
