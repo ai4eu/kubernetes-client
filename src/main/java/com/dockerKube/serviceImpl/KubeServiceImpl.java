@@ -532,7 +532,10 @@ public class KubeServiceImpl implements KubeService {
 		HashMap<String, ByteArrayOutputStream> hmap = new HashMap<String, ByteArrayOutputStream>();
 		ByteArrayOutputStream bOutput = new ByteArrayOutputStream(12);
 		CommonUtil util = new CommonUtil();
+		
+		
 		if (dBean != null) {
+			/*
 			String kubernetesFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_K8S_SH;
 			String installScript = util.getFileDetails(kubernetesFile);
 			if (installScript != null && !"".equals(installScript)) {
@@ -540,7 +543,8 @@ public class KubeServiceImpl implements KubeService {
 				hmap.put(DockerKubeConstants.KUBE_K8S_SH, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_K8S_SH + " " + bOutput);
 			}
-
+            */
+			/*
 			bOutput = new ByteArrayOutputStream(12);
 			String deployFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_DEPLOY_SH;
 			String deployScript = util.getFileDetails(deployFile);
@@ -549,11 +553,12 @@ public class KubeServiceImpl implements KubeService {
 				hmap.put(DockerKubeConstants.KUBE_DEPLOY_SH, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_DEPLOY_SH + " " + bOutput);
 			}
+			*/
 
 			bOutput = new ByteArrayOutputStream(12);
 			String kubeClientFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_CLIENT_SCRIPT;
 			String kubeClientScript = util.getFileDetails(kubeClientFile);
-			if (installScript != null && !"".equals(installScript)) {
+			if (kubeClientScript != null && !"".equals(kubeClientScript)) {
 				bOutput.write(kubeClientScript.getBytes());
 				hmap.put(DockerKubeConstants.KUBE_CLIENT_SCRIPT, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_CLIENT_SCRIPT + "   " + bOutput);
@@ -562,11 +567,13 @@ public class KubeServiceImpl implements KubeService {
 			bOutput = new ByteArrayOutputStream(12);
 			String docFilePath = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_DEPLOYMENT_FILE_PATH;
 			String docFile = util.getFileDetails(docFilePath);
-			if (installScript != null && !"".equals(installScript)) {
+			if (docFile != null && !"".equals(docFile)) {
 				bOutput.write(docFile.getBytes());
 				hmap.put(DockerKubeConstants.KUBE_DEPLOYMENT_FILE, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_DEPLOYMENT_FILE + "   " + bOutput);
 			}
+			
+			/*
 			// Env file
 			bOutput = new ByteArrayOutputStream(12);
 			String deployEnvScript = util.getEnvFileDetails(dBean);
@@ -575,6 +582,8 @@ public class KubeServiceImpl implements KubeService {
 				hmap.put(DockerKubeConstants.KUBE_DEPLOY_ENV_SH, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_DEPLOY_ENV_SH + " " + bOutput);
 			}
+			*/
+			
 			if (dBean.getBluePrintjson() != null && !"".equals(dBean.getBluePrintjson())) {
 				bOutput = new ByteArrayOutputStream(12);
 				bOutput.write(dBean.getBluePrintjson().getBytes());
@@ -1200,6 +1209,7 @@ public class KubeServiceImpl implements KubeService {
 		CommonUtil util = new CommonUtil();
 		if (dBean != null) {
 			bOutput = new ByteArrayOutputStream(12);
+			/*
 			String kubernetesFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_K8S_SH;
 			String installScript = util.getFileDetails(kubernetesFile);
 			if (installScript != null && !"".equals(installScript)) {
@@ -1207,7 +1217,9 @@ public class KubeServiceImpl implements KubeService {
 				hmap.put(DockerKubeConstants.KUBE_K8S_SH, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_K8S_SH + " " + bOutput);
 			}
-
+            */
+			
+			/*
 			bOutput = new ByteArrayOutputStream(12);
 			String deployFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_DEPLOY_SH;
 			String deployScript = util.getFileDetails(deployFile);
@@ -1216,11 +1228,12 @@ public class KubeServiceImpl implements KubeService {
 				hmap.put(DockerKubeConstants.KUBE_DEPLOY_SH, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_DEPLOY_SH + "   " + bOutput);
 			}
+			*/
 
 			bOutput = new ByteArrayOutputStream(12);
 			String kubeClientFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_CLIENT_SCRIPT;
 			String kubeClientScript = util.getFileDetails(kubeClientFile);
-			if (installScript != null && !"".equals(installScript)) {
+			if (kubeClientScript != null && !"".equals(kubeClientScript)) {
 				bOutput.write(kubeClientScript.getBytes());
 				hmap.put(DockerKubeConstants.KUBE_CLIENT_SCRIPT, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_CLIENT_SCRIPT + "   " + bOutput);
@@ -1229,12 +1242,13 @@ public class KubeServiceImpl implements KubeService {
 			bOutput = new ByteArrayOutputStream(12);
 			String docFilePath = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_DEPLOYMENT_FILE_PATH;
 			String docFile = util.getFileDetails(docFilePath);
-			if (installScript != null && !"".equals(installScript)) {
+			if (docFile != null && !"".equals(docFile)) {
 				bOutput.write(docFile.getBytes());
 				hmap.put(DockerKubeConstants.KUBE_DEPLOYMENT_FILE, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_DEPLOYMENT_FILE + "   " + bOutput);
 			}
 
+			/*
 			bOutput = new ByteArrayOutputStream(12);
 			String deployEnvScript = util.getEnvFileDetails(dBean);
 			if (deployEnvScript != null && !"".equals(deployEnvScript)) {
@@ -1242,6 +1256,7 @@ public class KubeServiceImpl implements KubeService {
 				hmap.put(DockerKubeConstants.KUBE_DEPLOY_ENV_SH, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_DEPLOY_ENV_SH + " " + bOutput);
 			}
+			*/
 
 			if (dBean.getSolutionYml() != null && !"".equals(dBean.getSolutionYml())) {
 				bOutput = new ByteArrayOutputStream(12);

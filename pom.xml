@@ -5,7 +5,7 @@
 
 	<groupId>com.dockerKube</groupId>
 	<artifactId>kubernetes-client</artifactId>
-	<version>3.0.8-SAJID</version>
+	<version>3.0.9-SAJID</version>
 	<packaging>jar</packaging>
 
 	<name>kubernetes-client</name>
@@ -315,14 +315,14 @@
 												<outputDirectory />
 											</file>
 											<file>
-												<source>deploy/private/deploy.sh</source>
+												<source>deploy/private/kubernetes-client-script.py</source>
 												<outputDirectory />
-												<destName>/home/deploy.sh</destName>
+												<destName>/home/kubernetes-client-script.py</destName>
 											</file>
 											<file>
-												<source>deploy/private/setup_k8s.sh</source>
+												<source>docs/deployment-readme.txt</source>
 												<outputDirectory />
-												<destName>/home/setup_k8s.sh</destName>
+												<destName>/home/deployment-readme.txt</destName>
 											</file>
 										</files>
 									</inline>
