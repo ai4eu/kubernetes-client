@@ -306,11 +306,6 @@
 									<inline>
 										<files>
 											<file>
-												<source>application.properties</source>
-												<outputDirectory />
-												<destName>application.properties</destName>
-											</file>
-											<file>
 												<source>target/${project.artifactId}-${project.version}.${project.packaging}</source>
 												<outputDirectory />
 											</file>
