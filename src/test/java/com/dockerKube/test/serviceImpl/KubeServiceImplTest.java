@@ -19,7 +19,7 @@ import com.dockerKube.beans.DeploymentBean;
 import com.dockerKube.serviceImpl.KubeServiceImpl;
 import com.dockerKube.utils.CommonUtil;
 import com.dockerKube.utils.DockerKubeConstants;
-
+import java.nio.file.Paths;
 
 
 public class KubeServiceImplTest {
@@ -49,7 +49,8 @@ public class KubeServiceImplTest {
 		byte[] byteArray =null;
 		DeploymentBean dBean =new DeploymentBean();
 		KubeServiceImpl impl=new KubeServiceImpl();
-		dBean.setFolderPath("deploy/private");
+        String path = Paths.get(".").toAbsolutePath().normalize().toString();
+        dBean.setFolderPath(path);
 		dBean.setBluePrintjson("blueprint.json");
 		dBean.setDockerInfoJson("dockerinfo.json");
 		dBean.setSolutionYml("solution.yml");

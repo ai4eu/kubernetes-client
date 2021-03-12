@@ -31,6 +31,8 @@ public interface KubeService {
 
 	public ByteArrayOutputStream getBluePrintNexus(String solutionId, String revisionId,String datasource,String userName,String dataPd,
 			String nexusUrl,String nexusUserName,String nexusPd) throws  Exception;
+	public ByteArrayOutputStream getBluePrintNexusSingleSolution(String solutionId, String revisionId,String datasource,String userName,String dataPd,
+			String nexusUrl,String nexusUserName,String nexusPd) throws  Exception;
 	public List<ContainerBean> getprotoDetails(List<ContainerBean> contList,DeploymentBean dBean)throws  Exception;
 	public ByteArrayOutputStream getNexusUrlFile(String nexusUrl, String nexusUserName,String nexusPassword,String nexusURI)throws Exception;
 	public void getDataBrokerFile(List<ContainerBean> contList,DeploymentBean dBean,String jsonString) throws Exception;

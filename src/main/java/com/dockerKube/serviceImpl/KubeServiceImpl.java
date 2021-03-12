@@ -70,6 +70,11 @@ public class KubeServiceImpl implements KubeService {
 	HashMap<String, String> deployments;
 
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	
+	public KubeServiceImpl()
+	{
+		deployments = new HashMap<String, String>();
+	}
 
 	/**
 	 * getClient is used geeting connection from database
@@ -91,14 +96,13 @@ public class KubeServiceImpl implements KubeService {
 			String solutionToolKitType) throws Exception {
 		logger.debug("singleSolutionDetails start");
 		logger.debug("imageTag " + imageTag + " singleModelPort " + singleModelPort);
-		deployments = new HashMap<String, String>();
 		getSolutionRevisionMap(dBean, solutionToolKitType);
 		byte[] solutionZip = null;
 		
 		List<ContainerBean> contList = null;
 		ParseJSON parseJson = new ParseJSON();
 		/** Blueprint.json **/
-		ByteArrayOutputStream byteArrayOutputStream = getBluePrintNexus1(dBean.getSolutionId(),
+		ByteArrayOutputStream byteArrayOutputStream = getBluePrintNexusSingleSolution(dBean.getSolutionId(),
 				dBean.getSolutionRevisionId(), dBean.getCmnDataUrl(), dBean.getCmnDataUser(), dBean.getCmnDataPd(),
 				dBean.getNexusUrl(), dBean.getNexusUserName(), dBean.getNexusPd());
 		logger.debug("byteArrayOutputStream " + byteArrayOutputStream);
@@ -116,7 +120,6 @@ public class KubeServiceImpl implements KubeService {
 
 	public byte[] compositeSolutionDetails(DeploymentBean dBean, String solutionToolKitType) throws Exception {
 		logger.debug("compositeSolutionDetails start");
-		deployments  = new HashMap<String, String>();
 		byte[] solutionZip = null;
 		List<ContainerBean> contList = null;
 		ParseJSON parseJson = new ParseJSON();
@@ -267,7 +270,7 @@ public class KubeServiceImpl implements KubeService {
 
 
 	
-	public ByteArrayOutputStream getBluePrintNexus1(String solutionId, String revisionId, String datasource,
+	public ByteArrayOutputStream getBluePrintNexusSingleSolution(String solutionId, String revisionId, String datasource,
 			String userName, String dataPd, String nexusUrl, String nexusUserName, String nexusPd) throws Exception {
 		logger.debug(" getBluePrintNexus Start");
 		logger.debug("solutionId " + solutionId);
