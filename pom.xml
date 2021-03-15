@@ -5,7 +5,7 @@
 
 	<groupId>com.dockerKube</groupId>
 	<artifactId>kubernetes-client</artifactId>
-	<version>3.0.11-SAJID</version>
+	<version>3.0.12-SAJID</version>
 	<packaging>jar</packaging>
 
 	<name>kubernetes-client</name>
@@ -312,12 +312,12 @@
 											<file>
 												<source>deploy/private/kubernetes-client-script.py</source>
 												<outputDirectory />
-												<destName>/home/kubernetes-client-script.py</destName>
+												<destName>/home/deploy/private/kubernetes-client-script.py</destName>
 											</file>
 											<file>
 												<source>docs/deployment-readme.txt</source>
 												<outputDirectory />
-												<destName>/home/deployment-readme.txt</destName>
+												<destName>/home/docs/deployment-readme.txt</destName>
 											</file>
 										</files>
 									</inline>
