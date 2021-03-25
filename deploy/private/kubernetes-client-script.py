@@ -23,6 +23,7 @@ import yaml
 import json
 import socket
 import subprocess
+#import orchestrator_client.orchestrator_client as orchestrator_client
 
 
 class DockerInfo:
@@ -196,6 +197,11 @@ class Deployment:
             print("Name of your given namespace is invalid")
             return False
 
+    def is_orchestrator_present(self, name, path):
+        for root, dirs, files in os.walk(path):
+            if name in files:
+                return True
+
 
 def main():
     namespace = input("Enter name of your namespace : ")
@@ -225,6 +231,19 @@ def main():
                 dockerInfo.update_node_port(deployment.port_mapping, dockerfilename)
         else:
             print("Path to the target directory is invalid :  ")
+
+        orchestrator_response = input("Do you want to run orchestrator your pipeline?(Y/N) :")
+        if deployment.is_orchestrator_present("orchestrator_client.py", path_dir):
+            if orchestrator_response == "Y" or orchestrator_response == "y":
+               print("Orchestration start.....")
+               path = path_dir+"/orchestrator_client/orchestrator_client.py"
+               subprocess.call(["python3", path])
+            else:
+                print("Thank you")
+        else:
+            print("Thank you")
+
+
     else:
         print("Existing namespaces are")
         print(output)

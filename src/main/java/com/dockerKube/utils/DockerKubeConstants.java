@@ -92,7 +92,7 @@ public class DockerKubeConstants {
 	
 	public static final String APPLICATION_JSON="application/json";
 	public static final String BLUEPRINT_CONTAINER_NAME= "BluePrintContainer";
-	public static final String BLUEPRINT_MODELCONNECTOR_NAME= "ochestrator";
+	public static final String BLUEPRINT_MODELCONNECTOR_NAME= "orchestrator";
 	public static final String SINGLE_CONTAINER_NAME= "SingleImageContainer";
 	public static final String PROBE_CONTAINER_NAME= "probe";
 	public static final String NGINX_CONTAINER_NAME= "nginx";
