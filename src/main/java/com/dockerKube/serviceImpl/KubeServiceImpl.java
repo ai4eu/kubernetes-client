@@ -92,11 +92,37 @@ public class KubeServiceImpl implements KubeService {
 		logger.debug("getClient End");
 		return client;
 	}
+    
+	public String getContainerName(String solutionId, String revisionId, String datasource,
+			String userName, String dataPd) {
+		
+		String containerName = "";
+		String solutionRevisionId = revisionId;
+		List<MLPArtifact> mlpArtifactList;
+		
+		CommonDataServiceRestClientImpl cmnDataService = getClient(datasource, userName, dataPd);
+		if (null != solutionRevisionId) {
+			// 3. Get the list of Artifiact for the SolutionId and SolutionRevisionId.
+			mlpArtifactList = cmnDataService.getSolutionRevisionArtifacts(solutionId, solutionRevisionId);
+			for (MLPArtifact mlpArtifact:mlpArtifactList) 
+			{
+				if (mlpArtifact.getArtifactTypeCode().equals("DI")) 
+				{
+					containerName = mlpArtifact.getName();
 
+				}
+				
+			}
+		}
+		
+		return containerName;
+	}
+	
 	public byte[] singleSolutionDetails(DeploymentBean dBean, String imageTag, String singleModelPort,
 			String solutionToolKitType) throws Exception {
 		logger.debug("singleSolutionDetails start");
 		logger.debug("imageTag " + imageTag + " singleModelPort " + singleModelPort);
+		deployments = new HashMap<String, String>();
 		getSolutionRevisionMap(dBean, solutionToolKitType);
 		byte[] solutionZip = null;
 		
@@ -110,9 +136,13 @@ public class KubeServiceImpl implements KubeService {
 		dBean.setBluePrintjson(byteArrayOutputStream.toString());
 		/** Proto file code **/
 		
+		String containerName = getContainerName(dBean.getSolutionId(),
+				dBean.getSolutionRevisionId(), dBean.getCmnDataUrl(), dBean.getCmnDataUser(), dBean.getCmnDataPd());
 		
+		// PAss container name here
 		String solutionYaml = getSingleSolutionYMLFile(imageTag, singleModelPort, dBean);
 		dBean.setSolutionYml(solutionYaml);
+		
 		logger.debug("solutionYaml " + solutionYaml);
 		solutionZip = createSingleSolutionZip(dBean);
 		logger.debug("singleSolutionDetails End");
@@ -121,6 +151,7 @@ public class KubeServiceImpl implements KubeService {
 
 	public byte[] compositeSolutionDetails(DeploymentBean dBean, String solutionToolKitType) throws Exception {
 		logger.debug("compositeSolutionDetails start");
+		deployments = new HashMap<String, String>();
 		byte[] solutionZip = null;
 		List<ContainerBean> contList = null;
 		ParseJSON parseJson = new ParseJSON();
@@ -531,6 +562,33 @@ public class KubeServiceImpl implements KubeService {
 		
 		
 		if (dBean != null) {
+			
+			bOutput = new ByteArrayOutputStream(12);
+			String kubeOrchestratorFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_ORCHESTRATOR_SCRIPT;
+			String kubeOrchestratorScript = util.getFileDetails(kubeOrchestratorFile);
+			if (kubeOrchestratorScript != null && !"".equals(kubeOrchestratorScript)) {
+				bOutput.write(kubeOrchestratorScript.getBytes());
+				hmap.put("orchestrator_client/"+DockerKubeConstants.KUBE_ORCHESTRATOR_SCRIPT, bOutput);
+				logger.debug(DockerKubeConstants.KUBE_ORCHESTRATOR_SCRIPT + "   " + bOutput);
+			}
+			
+			bOutput = new ByteArrayOutputStream(12);
+			String kubeOrchestratorPB2File = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_ORCHESTRATOR_PB2_SCRIPT;
+			String kubeOrchestratorPB2Script = util.getFileDetails(kubeOrchestratorPB2File);
+			if (kubeOrchestratorPB2Script != null && !"".equals(kubeOrchestratorPB2Script)) {
+				bOutput.write(kubeOrchestratorPB2Script.getBytes());
+				hmap.put("orchestrator_client/"+DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_SCRIPT, bOutput);
+				logger.debug(DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_SCRIPT + "   " + bOutput);
+			}
+			
+			bOutput = new ByteArrayOutputStream(12);
+			String kubeOrchestratorPB2gRPCFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_ORCHESTRATOR_PB2_GRPC_SCRIPT;
+			String kubeOrchestratorPB2gRPCScript = util.getFileDetails(kubeOrchestratorPB2gRPCFile);
+			if (kubeOrchestratorPB2gRPCScript != null && !"".equals(kubeOrchestratorPB2gRPCScript)) {
+				bOutput.write(kubeOrchestratorPB2gRPCScript.getBytes());
+				hmap.put("orchestrator_client/"+DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_GRPC_SCRIPT, bOutput);
+				logger.debug(DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_GRPC_SCRIPT + "   " + bOutput);
+			}
 			
 			bOutput = new ByteArrayOutputStream(12);
 			String kubeClientFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_CLIENT_SCRIPT;

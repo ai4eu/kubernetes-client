@@ -5,7 +5,7 @@
 
 	<groupId>com.dockerKube</groupId>
 	<artifactId>kubernetes-client</artifactId>
-	<version>3.0.12-SAJID</version>
+	<version>3.0.15-SAJID</version>
 	<packaging>jar</packaging>
 
 	<name>kubernetes-client</name>
@@ -318,6 +318,21 @@
 												<source>docs/deployment-readme.txt</source>
 												<outputDirectory />
 												<destName>/home/docs/deployment-readme.txt</destName>
+											</file>
+											<file>
+												<source>deploy/private/orchestrator_client/orchestrator_client.py</source>
+												<outputDirectory />
+												<destName>/home/deploy/private/orchestrator_client/orchestrator_client.py</destName>
+											</file>
+											<file>
+												<source>deploy/private/orchestrator_client/orchestrator_pb2_grpc.py</source>
+												<outputDirectory />
+												<destName>/home/deploy/private/orchestrator_client/orchestrator_pb2_grpc.py</destName>
+											</file>
+											<file>
+												<source>deploy/private/orchestrator_client/orchestrator_pb2.py</source>
+												<outputDirectory />
+												<destName>/home/deploy/private/orchestrator_client/orchestrator_pb2.py</destName>
 											</file>
 										</files>
 									</inline>

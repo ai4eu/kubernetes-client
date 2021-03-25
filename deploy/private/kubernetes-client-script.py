@@ -29,8 +29,7 @@ class DockerInfo:
     def __init__(self):
         print("")
 
-    def update_node_port(self, ports_mapping,
-                         filename="/home/sajid/Downloads/solution/dockerinfo.json"):
+    def update_node_port(self, ports_mapping, filename):
         print("Start updating the docker info Json : ")
         with open(filename, "r") as jsonFile:
             data = json.load(jsonFile)
@@ -39,6 +38,13 @@ class DockerInfo:
             container_name = (data["docker_info_list"][x]["container_name"]).lower()
             data["docker_info_list"][x]["port"] = ports_mapping[container_name]
 
+            ###  Updates the container names
+            data["docker_info_list"][x]["container_name"] = container_name
+
+            ### Update the ip_address
+            ip_address = (data["docker_info_list"][x]["ip_address"]).lower()
+            data["docker_info_list"][x]["ip_address"] = ip_address
+
         print(data["docker_info_list"])
 
         with open(filename, "w") as jsonFile:
@@ -46,9 +52,8 @@ class DockerInfo:
 
         print("\n Docker info file is successfully updated  ")
 
-
 class Deployment:
-    def __init__(self, start_port=30000, end_port=32767, path_dir="/home/sajid/Downloads/solution"):
+    def __init__(self, start_port=30000, end_port=32767, path_dir=""):
         self.path_dir = path_dir
         self.start_port = start_port
         self.end_port = end_port
@@ -93,6 +98,9 @@ class Deployment:
 
         print("Node port is : ", node_port)
         doc['spec']['ports'][0]['nodePort'] = node_port
+        ### port is also same as node_port
+        doc['spec']['ports'][0]['port'] = node_port
+
         name = doc['metadata']['name']
 
         self.port_mapping[name] = node_port
@@ -109,7 +117,7 @@ class Deployment:
             except OSError:
                 return False
 
-    def apply_deployment_services(self, file_name, node_port, namespace='sajid'):
+    def apply_deployment_services(self, file_name, node_port, namespace):
         print("File is : ", file_name)
         if self.is_service(file_name):
             self.set_node_port(file_name, node_port)
@@ -122,7 +130,7 @@ class Deployment:
         print(name)
         return name[0]
 
-    def delete_deployment_services(self, names, namespace='sajid'):
+    def delete_deployment_services(self, names, namespace):
         for name in names:
             process = subprocess.run(['kubectl', '-n', namespace, 'delete', str(name)], check=True,
                                      stdout=subprocess.PIPE,
@@ -132,7 +140,7 @@ class Deployment:
 
     def web_ui_service(self, file_name, namespace, node_port):
         print("Okay ")
-
+        target_port = 8062
         with open(file_name) as f:
             doc = yaml.safe_load(f)
 
@@ -144,6 +152,8 @@ class Deployment:
 
         print("Node port is : ", node_port)
         doc['spec']['ports'][0]['nodePort'] = node_port
+        doc['spec']['ports'][0]['port'] = node_port
+        doc['spec']['ports'][0]['targetPort'] = target_port
 
         name = doc['metadata']['name']
         self.port_mapping[name] = node_port
@@ -205,7 +215,7 @@ def main():
                     node_port = deployment.get_next_free_port()
                     node_port_web_ui = deployment.get_next_free_port()
                     names.append(deployment.web_ui_service(file, namespace, node_port_web_ui))
-                names.append(deployment.apply_deployment_services(file, node_port))
+                names.append(deployment.apply_deployment_services(file, node_port, namespace))
             #deployment.delete_deployment_services(names)
             print(deployment.port_mapping)
 
