@@ -109,13 +109,16 @@ class Deployment:
             yaml.dump(doc, f)
 
     def is_port_available(self, new_port):
+        ret = False
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
                 s.bind(('', new_port))
                 s.close()
-                return True
+                ret = True
             except OSError:
-                return False
+                ret = False
+        print("is_port_available(", new_port, ") returning", ret)
+        return ret
 
     def apply_deployment_services(self, file_name, node_port, namespace):
         print("File is : ", file_name)
