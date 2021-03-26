@@ -96,7 +96,7 @@ class Deployment:
 
         # Tags are hardcoded according to template of kubernetes client
 
-        print("Node port is : ", node_port)
+        print("Node port of file ", file_name, " is : ", node_port)
         doc['spec']['ports'][0]['nodePort'] = node_port
         ### port is also same as node_port
         doc['spec']['ports'][0]['port'] = node_port
@@ -124,6 +124,8 @@ class Deployment:
         print("apply_deployment_services file_name=", file_name)
         if self.is_service(file_name):
             self.set_node_port(file_name, node_port)
+        else:
+            print("not setting node_port (no service)")
 
         process = subprocess.run(['kubectl', '-n', namespace, 'apply', '-f', file_name], check=True,
                                  stdout=subprocess.PIPE,
@@ -221,6 +223,7 @@ def main():
                 if deployment.is_service(file):
                     node_port = deployment.get_next_free_port()
                     node_port_web_ui = deployment.get_next_free_port()
+                    print("node_port {} node_port_web_ui {}".format(node_port, node_port_web_ui))
                     names.append(deployment.web_ui_service(file, namespace, node_port_web_ui))
                 names.append(deployment.apply_deployment_services(file, node_port, namespace))
             #deployment.delete_deployment_services(names)
