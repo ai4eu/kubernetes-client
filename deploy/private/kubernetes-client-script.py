@@ -83,12 +83,13 @@ class Deployment:
     def is_service(self, file_name):
         with open(file_name) as f:
             doc = yaml.safe_load(f)
+        ret = None
         if doc['kind'] == "Service":
-            print("Service : True")
-            return True
+            ret = True
         else:
-            print("Service : False")
-            return False
+            ret = False
+        print("is_service(", file_name, "returning", ret)
+        return ret
 
     def set_node_port(self, file_name, node_port):
         with open(file_name) as f:
