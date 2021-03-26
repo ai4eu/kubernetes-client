@@ -121,7 +121,7 @@ class Deployment:
         return ret
 
     def apply_deployment_services(self, file_name, node_port, namespace):
-        print("File is : ", file_name)
+        print("apply_deployment_services file_name=", file_name)
         if self.is_service(file_name):
             self.set_node_port(file_name, node_port)
 
@@ -142,7 +142,7 @@ class Deployment:
         print(output)
 
     def web_ui_service(self, file_name, namespace, node_port):
-        print("Okay ")
+        print("web_ui_service file_name =", file_name, "node_port =", node_port)
         target_port = 8062
         with open(file_name) as f:
             doc = yaml.safe_load(f)
@@ -153,7 +153,6 @@ class Deployment:
             doc['metadata']['name'] = name1
             doc['spec']['selector']['app'] = name1
 
-        print("Node port is : ", node_port)
         doc['spec']['ports'][0]['nodePort'] = node_port
         doc['spec']['ports'][0]['port'] = node_port
         doc['spec']['ports'][0]['targetPort'] = target_port
@@ -163,7 +162,7 @@ class Deployment:
         result = file_name.split('.')
         result[0] = result[0] + '_webui.'
         file_name_new = result[0] + result[1]
-        print(file_name_new)
+        print("web_ui_service file_name_new =", file_name_new)
 
         if "_webui.yaml" in file_name:
             with open(file_name, "w") as f:
