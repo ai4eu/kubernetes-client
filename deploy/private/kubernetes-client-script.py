@@ -91,6 +91,29 @@ class Deployment:
         print("is_service(", file_name, "returning", ret)
         return ret
 
+    def set_image_pull_policy(self, deployment_file_name, new_policy='Always'):
+        '''
+        Permits to update a deployment YAML file so that the image will always be re-downloaded by kubernetes
+        This is very useful for development/debugging but should not be used in production
+        '''
+        with open(deployment_file_name) as f:
+            doc = yaml.safe_load(f)
+
+        try:
+            for c in doc['spec']['template']['spec']['containers']:
+                old_policy = c.get('imagePullPolicy', None)
+                if old_policy is not None and old_policy != new_policy:
+                    print("set_image_pull_policy changing imagePullPolicy from", old_policy, "to", new_policy)
+                elif old_policy is None:
+                    print("set_image_pull_policy setting imagePullPolicy to", new_policy)
+                c['imagePullPolicy'] = new_policy
+
+            with open(deployment_file_name, "w") as f:
+                yaml.dump(doc, f)
+        except Exception:
+            # if we process a file that is not a deployment - warn
+            print("WARNING: set_image_pull_policy encountered incompatible input file", deployment_file_name)
+
     def set_node_port(self, file_name, node_port):
         with open(file_name) as f:
             doc = yaml.safe_load(f)
@@ -127,6 +150,7 @@ class Deployment:
             self.set_node_port(file_name, node_port)
         else:
             print("not setting node_port (no service)")
+            self.set_image_pull_policy(file_name, 'Always')
 
         process = subprocess.run(['kubectl', '-n', namespace, 'apply', '-f', file_name], check=True,
                                  stdout=subprocess.PIPE,
