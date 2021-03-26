@@ -62,7 +62,6 @@ class Deployment:
         self.free_ports = []
 
     def all_free_ports(self, start_port=30000, end_port=32767):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         while start_port <= end_port:
             if self.is_port_available(start_port):
                 self.free_ports.append(start_port)
