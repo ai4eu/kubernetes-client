@@ -1,5 +1,4 @@
-  
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 # ===================================================================================
 # Copyright (C) 2019 Fraunhofer Gesellschaft. All rights reserved.
 # ===================================================================================
@@ -23,7 +22,7 @@ import yaml
 import json
 import socket
 import subprocess
-#import orchestrator_client.orchestrator_client as orchestrator_client
+import argparse
 
 
 class DockerInfo:
@@ -52,6 +51,7 @@ class DockerInfo:
             json.dump(data, jsonFile)
 
         print("\n Docker info file is successfully updated  ")
+
 
 class Deployment:
     def __init__(self, start_port=30000, end_port=32767, path_dir=""):
@@ -120,7 +120,7 @@ class Deployment:
 
         # Tags are hardcoded according to template of kubernetes client
 
-        print("Node port of file ", file_name, " is : ", node_port)
+        print("Node port is : ", node_port)
         doc['spec']['ports'][0]['nodePort'] = node_port
         ### port is also same as node_port
         doc['spec']['ports'][0]['port'] = node_port
@@ -141,7 +141,7 @@ class Deployment:
                 ret = True
             except OSError:
                 ret = False
-        print("is_port_available(", new_port, ") returning", ret)
+        #print("is_port_available(", new_port, ") returning", ret)
         return ret
 
     def apply_deployment_services(self, file_name, node_port, namespace):
@@ -208,6 +208,15 @@ class Deployment:
         print(type(output))
         return output
 
+    def get_service_ip_address(self, namespce, service_name):
+        process = subprocess.run(['kubectl', '-n', namespce, 'get', service_name], check=True, stdout=subprocess.PIPE,
+                                 universal_newlines=True)
+        # print(process.type())
+        output = process.stdout
+        name = output.split(" ")
+        name1 = [x for x in name if x]
+        return name1[7]
+
     def is_valid_namespace(self, namespace, existing_namespace):
 
         result = [x for x in (re.split('[  \n]', existing_namespace)) if x]
@@ -215,7 +224,7 @@ class Deployment:
             print(result.__contains__(namespace))
             index = result.index(namespace)
             print(index)
-            if result[index+1] == 'Active':
+            if result[index + 1] == 'Active':
                 print("Given namespace is active ")
                 return True
             else:
@@ -232,7 +241,14 @@ class Deployment:
 
 
 def main():
-    namespace = input("Enter name of your namespace : ")
+    my_parser = argparse.ArgumentParser()
+    my_parser.add_argument('--namespace', '-n', action='store', type=str, required=True,
+                           help='name of namespace is required ')
+    # Execute parse_args()
+    args = my_parser.parse_args()
+    print(args.namespace)
+
+    namespace = args.namespace
     path_dir = os.getcwd()
     deployment_dir = path_dir + "/deployments"
     deployment = Deployment(path_dir=deployment_dir)
@@ -248,10 +264,9 @@ def main():
                 if deployment.is_service(file):
                     node_port = deployment.get_next_free_port()
                     node_port_web_ui = deployment.get_next_free_port()
-                    print("node_port {} node_port_web_ui {}".format(node_port, node_port_web_ui))
                     names.append(deployment.web_ui_service(file, namespace, node_port_web_ui))
                 names.append(deployment.apply_deployment_services(file, node_port, namespace))
-            #deployment.delete_deployment_services(names)
+            # deployment.delete_deployment_services(names)
             print(deployment.port_mapping)
 
             dockerInfo = DockerInfo()
@@ -261,18 +276,11 @@ def main():
         else:
             print("Path to the target directory is invalid :  ")
 
-        orchestrator_response = input("Do you want to run orchestrator your pipeline?(Y/N) :")
         if deployment.is_orchestrator_present("orchestrator_client.py", path_dir):
-            if orchestrator_response == "Y" or orchestrator_response == "y":
-               print("Orchestration start.....")
-               path = path_dir+"/orchestrator_client/orchestrator_client.py"
-               subprocess.call(["python3", path])
-            else:
-                print("Thank you")
+            print("Orchestrator IP-address : " + deployment.get_service_ip_address(namespace, 'service/orchestrator'))
+            print("Orchestrator Port is : " + str(deployment.port_mapping.get('orchestrator')))
         else:
             print("Thank you")
-
-
     else:
         print("Existing namespaces are")
         print(output)
@@ -280,3 +288,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
