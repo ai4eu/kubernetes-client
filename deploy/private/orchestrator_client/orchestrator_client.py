@@ -20,35 +20,32 @@ import json
 # import the generated classes
 import orchestrator_pb2
 import orchestrator_pb2_grpc
-
+import shutil
+import os
+import argparse
 
 class OrchestratorClient:
 
-    def __init__(self, addr, blueprint_path, dockerinfo_path, zip_path):
-        self.port_address = addr
-        self.blueprint = blueprint_path
-        self.dockerinfo = dockerinfo_path
-        self.protozip = zip_path
 
-    def request_orchestrator_server_response(self):
+    def request_orchestrator_server_response(self, port_address, blueprint, dockerinfo, protozip):
         """open a gRPC channel"""
-        channel = grpc.insecure_channel(self.port_address, options=(('grpc.enable_http_proxy', 0),))
+        channel = grpc.insecure_channel(port_address)
 
         """create a stub (client)"""
         stub = orchestrator_pb2_grpc.start_orchestratorStub(channel)
 
         """Read the blueprint.json as dict and convert into string"""
-        with open(self.blueprint) as f:
+        with open(blueprint) as f:
             blueprint_dict = json.load(f)
         blueprint_str = json.dumps(blueprint_dict)
 
         """Read the dockerinfo.json as dict and convert to string"""
-        with open(self.dockerinfo) as f:
+        with open(dockerinfo) as f:
             dockerinfo_dict = json.load(f)
         dockerinfo_str = json.dumps(dockerinfo_dict)
 
         """Read the zip file containing all the protobufs for a particular pipeline"""
-        with open(self.protozip, 'rb') as f:
+        with open(protozip, 'rb') as f:
             byte_stream = f.read()
 
         """create a request to pass it to orchestrator server"""
@@ -60,11 +57,25 @@ class OrchestratorClient:
         print("status code for the orchestrator: ", response.statusCode)
         print("status message of the orchestrator: ", response.statusText)
 
+    def go_one_folder_up(self):
+        os.path.abspath(os.curdir)
+        os.chdir("..")
+        return os.path.abspath(os.curdir)
+
+    def create_protoszip(self):
+        path = self.go_one_folder_up()
+        proto_folder = path + "/microservice"
+        shutil.make_archive("pipelineprotos", 'zip', proto_folder)
 
 if __name__ == "__main__":
-    port = 'localhost:50090'
+    parser = argparse.ArgumentParser(description="Enter port address")
+    parser.add_argument('port_address', type=str, help='Enter the address in the format ipaddress:port' )
+    args = parser.parse_args()
+    #port = '10.103.246.169:30030'
+    port = args.port_address
+    client = OrchestratorClient()
+    client.create_protoszip()
     blueprint = "blueprint.json"
-    docker_info = "dockerinfo.json"
+    docker_info ="dockerinfo.json"
     proto_zip = "pipelineprotos.zip"
-    client = OrchestratorClient(port, blueprint, docker_info, proto_zip)
-    client.request_orchestrator_server_response()
+    client.request_orchestrator_server_response(port, blueprint, docker_info, proto_zip)
