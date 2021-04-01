@@ -261,6 +261,8 @@ def main():
             node_port = 0
             names = []  ## this is used for deletion.
             for file in files:
+                if file.endswith('webui.yaml'):
+                    continue
                 if deployment.is_service(file):
                     node_port = deployment.get_next_free_port()
                     node_port_web_ui = deployment.get_next_free_port()
