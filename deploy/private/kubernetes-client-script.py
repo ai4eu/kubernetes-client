@@ -198,7 +198,7 @@ class Deployment:
             with open(file_name_new, "w") as f:
                 yaml.dump(doc, f)
 
-        return self.apply_deployment_services(file_name, node_port, namespace)
+        return self.apply_deployment_services(file_name_new, node_port, namespace)
 
     def get_namespaces(self):
         process = subprocess.run(['kubectl', 'get', 'namespaces'], check=True,
