@@ -45,7 +45,7 @@ class DockerInfo:
             ip_address = (data["docker_info_list"][x]["ip_address"]).lower()
             data["docker_info_list"][x]["ip_address"] = ip_address
 
-         print("update_node_port: %s" % data["docker_info_list"])
+        print("update_node_port: %s" % data["docker_info_list"])
 
         with open(filename, "w") as jsonFile:
             json.dump(data, jsonFile)
@@ -137,7 +137,7 @@ class Deployment:
                                      stdout=subprocess.PIPE,
                                      universal_newlines=True)
         output = process.stdout
-         print("delete_deployment_services output %s" % output)
+        print("delete_deployment_services output %s" % output)
 
     def web_ui_service(self, file_name, namespace, node_port):
         print("Okay ")
@@ -189,6 +189,16 @@ class Deployment:
         name = output.split(" ")
         name1 = [x for x in name if x]
         return name1[7]
+
+    def get_node_ip_address(self, namespce):
+        process = subprocess.run(['kubectl', '-n', namespce, 'get', 'node', '-o', 'wide'], check=True,
+                                 stdout=subprocess.PIPE,
+                                 universal_newlines=True)
+        # print(process.type())
+        output = process.stdout
+        name = output.split(" ")
+        name1 = [x for x in name if x]
+        return name1[14]
 
     def is_valid_namespace(self, namespace, existing_namespace):
 
@@ -252,7 +262,7 @@ def main():
             print("Path to the target directory is invalid :  ")
 
         if deployment.is_orchestrator_present("orchestrator_client.py", path_dir):
-            print("Orchestrator IP-address : " + deployment.get_service_ip_address(namespace, 'service/orchestrator'))
+            print("Node IP-address : " + deployment.get_node_ip_address(namespace))
             print("Orchestrator Port is : " + str(deployment.port_mapping.get('orchestrator')))
         else:
             print("Thank you")
@@ -263,3 +273,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
