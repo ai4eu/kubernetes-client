@@ -60,6 +60,8 @@ public class DockerKubeConstants {
 	public static final String SELECTOR_DEP_YML="selector";
 	public static final String IMAGE_DEP_YML="image";
 	public static final String PROTOBUF_API_DEP_YML="protobuf-api";
+	public static final String WEBUI_DEP_YML="webui";
+	public static final String WEBUI_PORT_DEP_YML="8062";
 	public static final String PROBE_UI_YML="probe-ui";
 	
 	

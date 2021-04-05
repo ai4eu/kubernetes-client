@@ -844,10 +844,14 @@ public class KubeServiceImpl implements KubeService {
 
 		ArrayNode portsArrayNode = containerNode.arrayNode();
 		ObjectNode portsNode = objectMapper.createObjectNode();
+		ObjectNode portsNodeWebUI = objectMapper.createObjectNode();
 		portsNode.put(DockerKubeConstants.NAME_DEP_YML, DockerKubeConstants.PROTOBUF_API_DEP_YML);
 		portsNode.put(DockerKubeConstants.CONTAINERPORT_DEP_YML, dBean.getSingleTargetPort());
+		portsNodeWebUI.put(DockerKubeConstants.NAME_DEP_YML, DockerKubeConstants.WEBUI_DEP_YML);
+		portsNodeWebUI.put(DockerKubeConstants.CONTAINERPORT_DEP_YML, DockerKubeConstants.WEBUI_PORT_DEP_YML);
 
 		portsArrayNode.add(portsNode);
+		portsArrayNode.add(portsNodeWebUI);
 		containerArrayNode.add(containerNode);
 		containerNode.set(DockerKubeConstants.PORTS_DEP_YML, portsArrayNode);
 
@@ -1085,6 +1089,7 @@ public class KubeServiceImpl implements KubeService {
 
 		ArrayNode portsArrayNode = containerNode.arrayNode();
 		ObjectNode portsNode = objectMapper.createObjectNode();
+		ObjectNode portsNodeWebUI = objectMapper.createObjectNode();
 		if (nodeType != null && nodeType.equalsIgnoreCase(DockerKubeConstants.BLUEPRINT_CONTAINER)) {
 			portsNode.put(DockerKubeConstants.NAME_DEP_YML, DockerKubeConstants.NAME_MCAPI_YML);
 		} else if (nodeType != null && nodeType.equalsIgnoreCase(DockerKubeConstants.DATA_BROKER)) {
@@ -1103,8 +1108,10 @@ public class KubeServiceImpl implements KubeService {
 		} else {
 			portsNode.put(DockerKubeConstants.CONTAINERPORT_DEP_YML, dBean.getMlTargetPort());
 		}
-
+		portsNodeWebUI.put(DockerKubeConstants.NAME_DEP_YML, DockerKubeConstants.WEBUI_DEP_YML);
+		portsNodeWebUI.put(DockerKubeConstants.CONTAINERPORT_DEP_YML, DockerKubeConstants.WEBUI_PORT_DEP_YML);
 		portsArrayNode.add(portsNode);
+		portsArrayNode.add(portsNodeWebUI);
 		/*
 		 * if(nodeType!=null &&
 		 * nodeType.equalsIgnoreCase(DockerKubeConstants.PROBE_CONTAINER_NAME)){
