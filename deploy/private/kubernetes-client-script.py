@@ -59,23 +59,36 @@ class Deployment:
         self.start_port = start_port
         self.end_port = end_port
         self.port_mapping = dict()
-        self.free_ports = []
+        self.free_ports = None
 
-    def all_free_ports(self, start_port=30000, end_port=32767):
-        while start_port <= end_port:
-            if self.is_port_available(start_port):
-                self.free_ports.append(start_port)
-            start_port += 1
-        return self.free_ports
+    def determine_free_ports(self):
+        # ask which ports are used
+        process = subprocess.run([
+            'kubectl', 'get', 'svc', '--all-namespaces', '-o',
+            'go-template={{range .items}}{{range.spec.ports}}{{if .nodePort}}{{.nodePort}}{{"\\n"}}{{end}}{{end}}{{end}}'],
+            check=True, stdout=subprocess.PIPE, universal_newlines=True)
 
-    def get_next_free_port(self):
+        # get the used ports into a set
+        used_ports = set([
+            int(x.strip()) for x in process.stdout.split('\n') if x.strip() != ''
+        ])
+        # print("determine_free_ports: used_ports=%s" % used_ports)
+
+        # create the list of free ports
+        self.free_ports = [
+            p
+            for p in range(self.start_port, self.end_port + 1)
+            if p not in used_ports
+        ]
+        # print("determine_free_ports: free_ports=%s" % self.free_ports)
+
+    def get_next_free_port(self) -> int:
+        if self.free_ports is None:
+            self.determine_free_ports()
         if len(self.free_ports) > 0:
-            port = self.free_ports.pop(0)
-            if not self.is_port_available(port):
-                port = self.get_next_free_port()
+            return self.free_ports.pop(0)
         else:
-            print("There is no available free port in your max_port range")
-        return port
+            raise RuntimeError("There is no available free port in your max_port range")
 
     def get_current_dir(self):
         return os.getcwd()
@@ -131,18 +144,6 @@ class Deployment:
 
         with open(file_name, "w") as f:
             yaml.dump(doc, f)
-
-    def is_port_available(self, new_port):
-        ret = False
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.bind(('', new_port))
-                s.close()
-                ret = True
-            except OSError:
-                ret = False
-        # print("is_port_available(", new_port, ") returning", ret)
-        return ret
 
     def apply_deployment_services(self, file_name, node_port, namespace):
         print("apply_deployment_services file_name=", file_name)
@@ -268,7 +269,6 @@ def main():
     if deployment.is_valid_namespace(namespace, output):
         if os.path.isdir(deployment.path_dir):
             files = glob.glob(deployment.path_dir + "/*.yaml")
-            ports = deployment.all_free_ports()
             node_port = 0
             names = []  ## this is used for deletion.
             for file in files:
