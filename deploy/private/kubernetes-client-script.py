@@ -179,7 +179,7 @@ class Deployment:
             print("  added webui suffix")
             name1 = (doc['metadata']['name']) + "webui"
             doc['metadata']['name'] = name1
-            doc['spec']['selector']['app'] = name1
+            # doc['spec']['selector']['app'] = name1
 
         doc['spec']['ports'][0]['name'] = port_name
         doc['spec']['ports'][0]['nodePort'] = node_port
