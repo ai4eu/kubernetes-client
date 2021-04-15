@@ -23,6 +23,7 @@ Step 1:
 Extract the downloaded solution.zip folder. 
 
 Step 2:
+make sure python yaml is installed
 Now run the python script kubernetes-client-script.py. You have to provide namespace as parameter to the script.
 
 Step 3:
