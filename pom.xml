@@ -5,7 +5,7 @@
 
 	<groupId>com.dockerKube</groupId>
 	<artifactId>kubernetes-client</artifactId>
-	<version>3.0.24</version>
+	<version>3.0.25</version>
 	<packaging>jar</packaging>
 
 	<name>kubernetes-client</name>
@@ -21,7 +21,6 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>1.8</java.version>
 		<start-class>com.dockerKube.kubernetesclient.KubernetesClientApplication</start-class>
 		<skipTests>false</skipTests>
 		<!-- Jenkins invokes mvn with argument -Dbuild.number=${BUILD_NUMBER} -->
@@ -141,6 +140,47 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.0.0-M2</version>
+				<executions>
+					<execution>
+						<id>enforce-versions</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedPlugins>
+									<!-- will only display a warning but does not fail the build. -->
+									<level>WARN</level>
+									<excludes>
+										<exclude>org.apache.maven.plugins:maven-verifier-plugin</exclude>
+									</excludes>
+									<message>Please consider using the maven-invoker-plugin (http://maven.apache.org/plugins/maven-invoker-plugin/)!</message>
+								</bannedPlugins>
+								<requireMavenVersion>
+									<version>3.0.3</version>
+								</requireMavenVersion>
+								<requireJavaVersion>
+									<version>11</version>
+								</requireJavaVersion>
+								<!-- <requireOS>
+                  <family>unix</family>
+                </requireOS> -->
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<release>11</release>
+				</configuration>
+			</plugin>
 		    <plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
@@ -262,7 +302,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.7.9</version>
+				<version>0.8.4</version>
 				<executions>
 					<execution>
 						<id>default-prepare-agent</id>
@@ -297,7 +337,7 @@
 							<!-- Specify a tag to avoid default tag "latest" -->
 							<name>acumos/kubernetes-client:${project.version}</name>
 							<build>
-								<from>openjdk:8-jre-slim</from>
+								<from>adoptopenjdk/openjdk11-openj9:alpine-jre</from>
 								<tags>
 									<!-- Add tag with build number -->
 									<tag>${project.version}-b${build.number}</tag>
