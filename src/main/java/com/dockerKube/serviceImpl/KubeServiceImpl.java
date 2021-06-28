@@ -68,12 +68,12 @@ import org.acumos.cds.domain.MLPCodeNamePair;
 @Service
 public class KubeServiceImpl implements KubeService {
 
+	String sharedFolderName = "";
 	HashMap<String, String> deployments;
 
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	
-	public KubeServiceImpl()
-	{
+
+	public KubeServiceImpl() {
 		deployments = new HashMap<String, String>();
 	}
 
@@ -92,32 +92,30 @@ public class KubeServiceImpl implements KubeService {
 		logger.debug("getClient End");
 		return client;
 	}
-    
-	public String getContainerName(String solutionId, String revisionId, String datasource,
-			String userName, String dataPd) {
-		
+
+	public String getContainerName(String solutionId, String revisionId, String datasource, String userName,
+			String dataPd) {
+
 		String containerName = "";
 		String solutionRevisionId = revisionId;
 		List<MLPArtifact> mlpArtifactList;
-		
+
 		CommonDataServiceRestClientImpl cmnDataService = getClient(datasource, userName, dataPd);
 		if (null != solutionRevisionId) {
 			// 3. Get the list of Artifiact for the SolutionId and SolutionRevisionId.
 			mlpArtifactList = cmnDataService.getSolutionRevisionArtifacts(solutionId, solutionRevisionId);
-			for (MLPArtifact mlpArtifact:mlpArtifactList) 
-			{
-				if (mlpArtifact.getArtifactTypeCode().equals("DI")) 
-				{
+			for (MLPArtifact mlpArtifact : mlpArtifactList) {
+				if (mlpArtifact.getArtifactTypeCode().equals("DI")) {
 					containerName = mlpArtifact.getName();
 
 				}
-				
+
 			}
 		}
-		
+
 		return containerName;
 	}
-	
+
 	public byte[] singleSolutionDetails(DeploymentBean dBean, String imageTag, String singleModelPort,
 			String solutionToolKitType) throws Exception {
 		logger.debug("singleSolutionDetails start");
@@ -125,7 +123,7 @@ public class KubeServiceImpl implements KubeService {
 		deployments = new HashMap<String, String>();
 		getSolutionRevisionMap(dBean, solutionToolKitType);
 		byte[] solutionZip = null;
-		
+
 		List<ContainerBean> contList = null;
 		ParseJSON parseJson = new ParseJSON();
 		/** Blueprint.json **/
@@ -135,14 +133,14 @@ public class KubeServiceImpl implements KubeService {
 		logger.debug("byteArrayOutputStream " + byteArrayOutputStream);
 		dBean.setBluePrintjson(byteArrayOutputStream.toString());
 		/** Proto file code **/
-		
-		String containerName = getContainerName(dBean.getSolutionId(),
-				dBean.getSolutionRevisionId(), dBean.getCmnDataUrl(), dBean.getCmnDataUser(), dBean.getCmnDataPd());
-		
+
+		String containerName = getContainerName(dBean.getSolutionId(), dBean.getSolutionRevisionId(),
+				dBean.getCmnDataUrl(), dBean.getCmnDataUser(), dBean.getCmnDataPd());
+
 		// PAss container name here
 		String solutionYaml = getSingleSolutionYMLFile(imageTag, singleModelPort, dBean);
 		dBean.setSolutionYml(solutionYaml);
-		
+
 		logger.debug("solutionYaml " + solutionYaml);
 		solutionZip = createSingleSolutionZip(dBean);
 		logger.debug("singleSolutionDetails End");
@@ -156,14 +154,14 @@ public class KubeServiceImpl implements KubeService {
 		List<ContainerBean> contList = null;
 		ParseJSON parseJson = new ParseJSON();
 		/** Blueprint.json **/
-		ByteArrayOutputStream byteArrayOutputStream = getBluePrintNexus(dBean.getSolutionId(),
-				dBean.getSolutionRevisionId(), dBean.getCmnDataUrl(), dBean.getCmnDataUser(), dBean.getCmnDataPd(),
-				dBean.getNexusUrl(), dBean.getNexusUserName(), dBean.getNexusPd());
+		String byteArrayOutputStream = getBluePrintNexus(dBean.getSolutionId(), dBean.getSolutionRevisionId(),
+				dBean.getCmnDataUrl(), dBean.getCmnDataUser(), dBean.getCmnDataPd(), dBean.getNexusUrl(),
+				dBean.getNexusUserName(), dBean.getNexusPd());
 		logger.debug("byteArrayOutputStream " + byteArrayOutputStream);
-		dBean.setBluePrintjson(byteArrayOutputStream.toString());
+		dBean.setBluePrintjson(byteArrayOutputStream);
 		/** Proto file code **/
 
-		contList = parseJson.getProtoDetails(byteArrayOutputStream.toString());
+		contList = parseJson.getProtoDetails(byteArrayOutputStream);
 
 		String containerName;
 		for (ContainerBean containerBean : contList) {
@@ -171,7 +169,12 @@ public class KubeServiceImpl implements KubeService {
 			containerBean.setContainerName(containerName);
 			logger.debug("Container Name : " + containerBean.getContainerName());
 		}
-
+		
+		if (!sharedFolderName.isEmpty()) {
+		   String pvcYAML = getPersistentVolumeClaim(DockerKubeConstants.PVC_NAME_YAML);
+		   deployments.put("deployments/pvc.yaml", pvcYAML);
+		}
+		
 		logger.debug("contList " + contList);
 		dBean.setContainerBeanList(contList);
 		getprotoDetails(dBean.getContainerBeanList(), dBean);
@@ -268,8 +271,8 @@ public class KubeServiceImpl implements KubeService {
 	 */
 
 	@Override
-	public ByteArrayOutputStream getBluePrintNexus(String solutionId, String revisionId, String datasource,
-			String userName, String dataPd, String nexusUrl, String nexusUserName, String nexusPd) throws Exception {
+	public String getBluePrintNexus(String solutionId, String revisionId, String datasource, String userName,
+			String dataPd, String nexusUrl, String nexusUserName, String nexusPd) throws Exception {
 		logger.debug(" getBluePrintNexus Start");
 		logger.debug("solutionId " + solutionId);
 		logger.debug("revisionId " + revisionId);
@@ -297,13 +300,22 @@ public class KubeServiceImpl implements KubeService {
 			}
 		}
 		logger.debug("getBluePrintNexus End byteArrayOutputStream " + byteArrayOutputStream);
-		return byteArrayOutputStream;
+		ParseJSON parseJson = new ParseJSON();
+
+		sharedFolderName = parseJson.getSharedFolderContainerName(byteArrayOutputStream.toString());
+		
+		System.out.println(sharedFolderName);
+		
+		if (sharedFolderName.isEmpty()) {
+			return byteArrayOutputStream.toString();
+		}else {
+			return parseJson.removeSharedFolder(byteArrayOutputStream.toString());
+		}
 	}
 
-
-	
-	public ByteArrayOutputStream getBluePrintNexusSingleSolution(String solutionId, String revisionId, String datasource,
-			String userName, String dataPd, String nexusUrl, String nexusUserName, String nexusPd) throws Exception {
+	public ByteArrayOutputStream getBluePrintNexusSingleSolution(String solutionId, String revisionId,
+			String datasource, String userName, String dataPd, String nexusUrl, String nexusUserName, String nexusPd)
+			throws Exception {
 		logger.debug(" getBluePrintNexus Start");
 		logger.debug("solutionId " + solutionId);
 		logger.debug("revisionId " + revisionId);
@@ -318,10 +330,8 @@ public class KubeServiceImpl implements KubeService {
 			// 3. Get the list of Artifiact for the SolutionId and SolutionRevisionId.
 			mlpArtifactList = cmnDataService.getSolutionRevisionArtifacts(solutionId, solutionRevisionId);
 			if (null != mlpArtifactList && !mlpArtifactList.isEmpty()) {
-				nexusURI = mlpArtifactList.stream()
-						.filter(mlpArt -> mlpArt.getArtifactTypeCode()
-								.equalsIgnoreCase(DockerKubeConstants.ARTIFACT_TYPE_PROTO))
-						.findFirst().get().getUri();
+				nexusURI = mlpArtifactList.stream().filter(mlpArt -> mlpArt.getArtifactTypeCode()
+						.equalsIgnoreCase(DockerKubeConstants.ARTIFACT_TYPE_PROTO)).findFirst().get().getUri();
 				logger.debug(" Nexus URI : " + nexusURI);
 				if (null != nexusURI) {
 					NexusArtifactClient nexusArtifactClient = nexusArtifactClient(nexusUrl, nexusUserName, nexusPd);
@@ -329,23 +339,19 @@ public class KubeServiceImpl implements KubeService {
 
 				}
 			}
-			for (MLPArtifact mlpArtifact:mlpArtifactList) 
-			{
-				if (mlpArtifact.getArtifactTypeCode().equals("MI")) 
-				{
+			for (MLPArtifact mlpArtifact : mlpArtifactList) {
+				if (mlpArtifact.getArtifactTypeCode().equals("MI")) {
 					String protoFolderName = "microservice" + "/" + mlpArtifact.getName();
-				    deployments.put(protoFolderName, byteArrayOutputStream.toString());
+					deployments.put(protoFolderName, byteArrayOutputStream.toString());
 				}
-				
+
 			}
-				
+
 		}
 		logger.debug("getBluePrintNexus End byteArrayOutputStream " + byteArrayOutputStream);
 		return byteArrayOutputStream;
 	}
 
-	
-	
 	/**
 	 * getNexusUrlFile method is used to get file from nexus
 	 * 
@@ -559,37 +565,39 @@ public class KubeServiceImpl implements KubeService {
 		HashMap<String, ByteArrayOutputStream> hmap = new HashMap<String, ByteArrayOutputStream>();
 		ByteArrayOutputStream bOutput = new ByteArrayOutputStream(12);
 		CommonUtil util = new CommonUtil();
-		
-		
+
 		if (dBean != null) {
-			
+
 			bOutput = new ByteArrayOutputStream(12);
-			String kubeOrchestratorFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_ORCHESTRATOR_SCRIPT;
+			String kubeOrchestratorFile = dBean.getFolderPath() + "/"
+					+ DockerKubeConstants.KUBE_PATH_ORCHESTRATOR_SCRIPT;
 			String kubeOrchestratorScript = util.getFileDetails(kubeOrchestratorFile);
 			if (kubeOrchestratorScript != null && !"".equals(kubeOrchestratorScript)) {
 				bOutput.write(kubeOrchestratorScript.getBytes());
-				hmap.put("orchestrator_client/"+DockerKubeConstants.KUBE_ORCHESTRATOR_SCRIPT, bOutput);
+				hmap.put("orchestrator_client/" + DockerKubeConstants.KUBE_ORCHESTRATOR_SCRIPT, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_ORCHESTRATOR_SCRIPT + "   " + bOutput);
 			}
-			
+
 			bOutput = new ByteArrayOutputStream(12);
-			String kubeOrchestratorPB2File = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_ORCHESTRATOR_PB2_SCRIPT;
+			String kubeOrchestratorPB2File = dBean.getFolderPath() + "/"
+					+ DockerKubeConstants.KUBE_PATH_ORCHESTRATOR_PB2_SCRIPT;
 			String kubeOrchestratorPB2Script = util.getFileDetails(kubeOrchestratorPB2File);
 			if (kubeOrchestratorPB2Script != null && !"".equals(kubeOrchestratorPB2Script)) {
 				bOutput.write(kubeOrchestratorPB2Script.getBytes());
-				hmap.put("orchestrator_client/"+DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_SCRIPT, bOutput);
+				hmap.put("orchestrator_client/" + DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_SCRIPT, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_SCRIPT + "   " + bOutput);
 			}
-			
+
 			bOutput = new ByteArrayOutputStream(12);
-			String kubeOrchestratorPB2gRPCFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_ORCHESTRATOR_PB2_GRPC_SCRIPT;
+			String kubeOrchestratorPB2gRPCFile = dBean.getFolderPath() + "/"
+					+ DockerKubeConstants.KUBE_PATH_ORCHESTRATOR_PB2_GRPC_SCRIPT;
 			String kubeOrchestratorPB2gRPCScript = util.getFileDetails(kubeOrchestratorPB2gRPCFile);
 			if (kubeOrchestratorPB2gRPCScript != null && !"".equals(kubeOrchestratorPB2gRPCScript)) {
 				bOutput.write(kubeOrchestratorPB2gRPCScript.getBytes());
-				hmap.put("orchestrator_client/"+DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_GRPC_SCRIPT, bOutput);
+				hmap.put("orchestrator_client/" + DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_GRPC_SCRIPT, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_ORCHESTRATOR_PB2_GRPC_SCRIPT + "   " + bOutput);
 			}
-			
+
 			bOutput = new ByteArrayOutputStream(12);
 			String kubeClientFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_CLIENT_SCRIPT;
 			String kubeClientScript = util.getFileDetails(kubeClientFile);
@@ -607,7 +615,7 @@ public class KubeServiceImpl implements KubeService {
 				hmap.put(DockerKubeConstants.KUBE_DEPLOYMENT_FILE, bOutput);
 				logger.debug(DockerKubeConstants.KUBE_DEPLOYMENT_FILE + "   " + bOutput);
 			}
-			
+
 			if (dBean.getBluePrintjson() != null && !"".equals(dBean.getBluePrintjson())) {
 				bOutput = new ByteArrayOutputStream(12);
 				bOutput.write(dBean.getBluePrintjson().getBytes());
@@ -655,8 +663,7 @@ public class KubeServiceImpl implements KubeService {
 							String protoFileName = contbean.getProtoUriPath().substring(index + 1);
 							bOutput = new ByteArrayOutputStream(12);
 							bOutput.write(contbean.getProtoUriDetails().getBytes());
-							String protoFolderName = "microservice" + "/" + contbean.getContainerName()
-									+ ".proto";
+							String protoFolderName = "microservice" + "/" + contbean.getContainerName() + ".proto";
 							logger.debug(protoFolderName + "  " + protoFolderName);
 							hmap.put(protoFolderName, bOutput);
 							logger.debug(contbean.getProtoUriPath() + " " + bOutput);
@@ -714,9 +721,11 @@ public class KubeServiceImpl implements KubeService {
 		String modelName = cutil.getModelName(imageTag, solutionId);
 		String serviceYml = getSingleSolutionService(singleModelPort, dBean, modelName);
 		String deploymentYml = getSingleSolutionDeployment(imageTag, dBean, modelName);
+		//String pvcYAML = getPersistentVolumeClaim(modelName);
 
 		deployments.put("deployments/service.yaml", serviceYml);
 		deployments.put("deployments/deployment.yaml", deploymentYml);
+		//deployments.put("deployments/pvc.yaml", pvcYAML);
 
 		solutionYaml = serviceYml;
 		solutionYaml = solutionYaml + deploymentYml;
@@ -836,10 +845,12 @@ public class KubeServiceImpl implements KubeService {
 		ObjectNode containerNode = objectMapper.createObjectNode();
 		containerNode.put(DockerKubeConstants.NAME_DEP_YML, modelNameYml);
 		/*
-		// We are not using the Proxy image. We are using Image and Tag which is provided during onboarding.
-		containerNode.put(DockerKubeConstants.IMAGE_DEP_YML,
-				cutil.getProxyImageName(imageTag, dBean.getDockerProxyHost(), dBean.getDockerProxyPort()));
-		*/
+		 * // We are not using the Proxy image. We are using Image and Tag which is
+		 * provided during onboarding.
+		 * containerNode.put(DockerKubeConstants.IMAGE_DEP_YML,
+		 * cutil.getProxyImageName(imageTag, dBean.getDockerProxyHost(),
+		 * dBean.getDockerProxyPort()));
+		 */
 		containerNode.put(DockerKubeConstants.IMAGE_DEP_YML, imageTag);
 
 		ArrayNode portsArrayNode = containerNode.arrayNode();
@@ -967,13 +978,13 @@ public class KubeServiceImpl implements KubeService {
 		specNode.set(DockerKubeConstants.PORTS_YML, portsArrayNode);
 		apiRootNode.set(DockerKubeConstants.SPEC_YML, specNode);
 		serviceYml = yamlMapper.writeValueAsString(apiRootNode);
-		deployments.put(("deployments/"+(containerName) + "_service.yaml"), serviceYml);
+		deployments.put(("deployments/" + (containerName) + "_service.yaml"), serviceYml);
 		logger.debug("solutionDeployment " + serviceYml);
 		return serviceYml;
 	}
 
 	/**
-	 * getCompositeSolutionDeployment method is used to get service details
+	 * getCompositeSolutionDeployment method is used to get deployment details
 	 * 
 	 * @param imageTag      - image tag name
 	 * @param containerName - Name of container
@@ -985,7 +996,7 @@ public class KubeServiceImpl implements KubeService {
 	 */
 	public String getCompositeSolutionDeployment(String imageTag, String containerName, String imagePort,
 			String nodeType, DeploymentBean dBean) throws Exception {
-		logger.debug("getSingleSolutionDeployment Start");
+		logger.debug("getCompositeSolutionDeployment Start");
 
 		containerName = containerName.toLowerCase();
 
@@ -1023,6 +1034,8 @@ public class KubeServiceImpl implements KubeService {
 
 		ObjectNode specNode = objectMapper.createObjectNode();
 		specNode.put(DockerKubeConstants.REPLICAS_DEP_YML, 1);
+
+
 
 		ObjectNode selectorNode = objectMapper.createObjectNode();
 		ObjectNode matchLabelsNode = objectMapper.createObjectNode();
@@ -1087,6 +1100,17 @@ public class KubeServiceImpl implements KubeService {
 			containerNode.set(DockerKubeConstants.ENV, envArrayNode);
 		}
 
+		if (!sharedFolderName.isEmpty()) {
+
+			ArrayNode envArrayNode = containerNode.arrayNode();
+			ObjectNode env = objectMapper.createObjectNode();
+
+			env.put(DockerKubeConstants.ENV_NAME_DEP_YAML, DockerKubeConstants.ENV_SHARED_FOLDER_DEP_YAML);
+			env.put(DockerKubeConstants.ENV_VALUE_DEP_YAML, sharedFolderName);
+			envArrayNode.add(env);
+			containerNode.set(DockerKubeConstants.ENV, envArrayNode);
+		}
+
 		ArrayNode portsArrayNode = containerNode.arrayNode();
 		ObjectNode portsNode = objectMapper.createObjectNode();
 		ObjectNode portsNodeWebUI = objectMapper.createObjectNode();
@@ -1123,6 +1147,19 @@ public class KubeServiceImpl implements KubeService {
 		 */
 
 		containerNode.set(DockerKubeConstants.PORTS_DEP_YML, portsArrayNode);
+
+		if (!sharedFolderName.isEmpty()) {
+
+			ArrayNode volumeMountArrayNode = containerNode.arrayNode();
+			ObjectNode volumeMount = objectMapper.createObjectNode();
+
+			volumeMount.put(DockerKubeConstants.MOUNTPATH_DEP_YML, sharedFolderName);
+			volumeMount.put(DockerKubeConstants.NAME_VOLUME_MOUNT_DEP_YAML, containerName);
+			volumeMountArrayNode.add(volumeMount);
+			containerNode.set(DockerKubeConstants.VOLUMEMOUNTS_DEP_YML, volumeMountArrayNode);
+
+		}
+
 		// for Nginx
 		if (nodeType != null && nodeType.equalsIgnoreCase(DockerKubeConstants.PROBE_CONTAINER_NAME)) {
 			containerNodeNginx.put(DockerKubeConstants.NAME_DEP_YML, DockerKubeConstants.NGINX_CONTAINER_NAME);
@@ -1139,8 +1176,13 @@ public class KubeServiceImpl implements KubeService {
 		if (nodeType != null && nodeType.equalsIgnoreCase(DockerKubeConstants.BLUEPRINT_CONTAINER)) {
 			ArrayNode volmeMountArrayNode = containerNode.arrayNode();
 			ObjectNode volumeMountNode = objectMapper.createObjectNode();
-			volumeMountNode.put(DockerKubeConstants.MOUNTPATH_DEP_YML, DockerKubeConstants.PATHLOGS_DEP_YML);
-			volumeMountNode.put(DockerKubeConstants.NAME_DEP_YML, DockerKubeConstants.LOGS_DEP_YML);
+			if(sharedFolderName.isEmpty()) {
+			    volumeMountNode.put(DockerKubeConstants.MOUNTPATH_DEP_YML, DockerKubeConstants.PATHLOGS_DEP_YML);
+			    volumeMountNode.put(DockerKubeConstants.NAME_DEP_YML, DockerKubeConstants.LOGS_DEP_YML);
+			}else {
+				volumeMountNode.put(DockerKubeConstants.MOUNTPATH_DEP_YML, sharedFolderName);
+				volumeMountNode.put(DockerKubeConstants.NAME_DEP_YML, DockerKubeConstants.BLUEPRINT_MODELCONNECTOR_NAME);
+			}
 			volmeMountArrayNode.add(volumeMountNode);
 			containerNode.set(DockerKubeConstants.VOLUMEMOUNTS_DEP_YML, volmeMountArrayNode);
 		}
@@ -1172,6 +1214,10 @@ public class KubeServiceImpl implements KubeService {
 			containerArrayNode.add(containerNodeNginx);
 		}
 		specTempNode.set(DockerKubeConstants.CONTAINERS_DEP_YML, containerArrayNode);
+		
+		
+		
+		
 		// BLUEPRINT or DataBroker
 		if (nodeType != null && nodeType.equalsIgnoreCase(DockerKubeConstants.BLUEPRINT_CONTAINER)) {
 			ArrayNode volumeArrNode = templateNode.arrayNode();
@@ -1208,6 +1254,23 @@ public class KubeServiceImpl implements KubeService {
 			specTempNode.put(DockerKubeConstants.RESTARTPOLICY_DEP_YML, DockerKubeConstants.ALWAYS_DEP_YML);
 			specTempNode.set(DockerKubeConstants.VOLUMES_DEP_YML, volumeArrNode);
 		}
+		
+		
+		if (!sharedFolderName.isEmpty()) {
+			
+			if (nodeType != null) {
+				ArrayNode volmeMountArrayNode = specTempNode.arrayNode();
+				ObjectNode volumeNode = objectMapper.createObjectNode();
+				ObjectNode pvc = objectMapper.createObjectNode();
+
+				volumeNode.put(DockerKubeConstants.NAME_VOLUME_DEP_YAML, containerName);
+				pvc.put(DockerKubeConstants.CLAIM_NAME_DEP_YAML, DockerKubeConstants.PVC_NAME_YAML);
+				volumeNode.put(DockerKubeConstants.PVC_DEP_YAML, pvc);
+				volmeMountArrayNode.add(volumeNode);
+				specTempNode.set(DockerKubeConstants.VOLUME_DEP_YAML, volmeMountArrayNode);
+			}
+		}
+		
 		// Finish
 
 		templateNode.set(DockerKubeConstants.METADATA_DEP_YML, metadataTemplateNode);
@@ -1220,8 +1283,65 @@ public class KubeServiceImpl implements KubeService {
 		logger.debug("before " + solutionDeployment);
 		solutionDeployment = solutionDeployment.replace("'", "");
 		logger.debug("After " + solutionDeployment);
-		deployments.put(("deployments/"+(containerName) + "_deployment.yaml"), solutionDeployment);
+		deployments.put(("deployments/" + (containerName) + "_deployment.yaml"), solutionDeployment);
 		return solutionDeployment;
+	}
+
+	/**
+	 * getPersistentVolumeClaim method is used to create Persistent Volume Claim
+	 * details
+	 * 
+	 * @param solutionName - solutionName
+	 * @throws Exception - exception for method
+	 * 
+	 */
+	public String getPersistentVolumeClaim(String solutionName) throws Exception {
+		logger.debug("getPersistentVolumeClaim Start");
+		ObjectMapper objectMapper = new ObjectMapper();
+		CommonUtil cutil = new CommonUtil();
+		YAMLMapper yamlMapper = new YAMLMapper(
+				new YAMLFactory().configure(YAMLGenerator.Feature.MINIMIZE_QUOTES, true));
+		ObjectNode kindRootNode = objectMapper.createObjectNode();
+		kindRootNode.put(DockerKubeConstants.APIVERSION_PVC_YML, DockerKubeConstants.APPS_V1_PVC_YML);
+		kindRootNode.put(DockerKubeConstants.KIND_PVC_YML, DockerKubeConstants.PESISTENT_VOLUME_CLAIM_PVC_YML);
+
+		ObjectNode metadataNode = objectMapper.createObjectNode();
+		// metadataNode.put(DockerKubeConstants.NAMESPACE_DEP_YML,
+		// DockerKubeConstants.ACUMOS_DEP_YML);
+		String modelNameYml = (solutionName != null) ? solutionName : DockerKubeConstants.MYMODEL_DEP_YML;
+		metadataNode.put(DockerKubeConstants.NAME_PVC_YML, modelNameYml);
+		kindRootNode.set(DockerKubeConstants.METADATA_PVC_YML, metadataNode);
+
+		ObjectNode specNode = objectMapper.createObjectNode();
+		ArrayNode storage_ArrayNode = specNode.arrayNode();
+		specNode.put(DockerKubeConstants.STORAGECLASSNAME_PVC_YAML, "");
+
+		storage_ArrayNode.add(DockerKubeConstants.READ_WRITE_ONCE_PVC_YAML);
+		specNode.put(DockerKubeConstants.ACCESSMODES_PVC_YAML, storage_ArrayNode);
+
+		specNode.put(DockerKubeConstants.RESOURCES_PVC_YAML, "");
+
+		ObjectNode resourceNode = objectMapper.createObjectNode();
+		ObjectNode requestNode = objectMapper.createObjectNode();
+
+		resourceNode.put(DockerKubeConstants.REQUESTS_PVC_YAML, "");
+		specNode.set(DockerKubeConstants.RESOURCES_PVC_YAML, resourceNode);
+
+		requestNode.put(DockerKubeConstants.STORAGE_PVC_YAML, DockerKubeConstants.ONE_GI_STORAGE_PVC_YAML);
+		resourceNode.put(DockerKubeConstants.REQUESTS_PVC_YAML, requestNode);
+
+		// specNode.put(DockerKubeConstants.REQUESTS_PVC_YAML, "");
+		// specNode.put(DockerKubeConstants.STORAGE_PVC_YAML,
+		// DockerKubeConstants.ONE_GI_STORAGE_PVC_YAML);
+
+		kindRootNode.set(DockerKubeConstants.SPEC_PVC_YAML, specNode);
+
+		String PVC = yamlMapper.writeValueAsString(kindRootNode);
+		logger.debug("before " + PVC);
+		PVC = PVC.replace("'", "");
+		logger.debug("After " + PVC);
+
+		return PVC;
 	}
 
 	/**
@@ -1240,9 +1360,9 @@ public class KubeServiceImpl implements KubeService {
 		CommonUtil util = new CommonUtil();
 		if (dBean != null) {
 			bOutput = new ByteArrayOutputStream(12);
-			
+
 			bOutput = new ByteArrayOutputStream(12);
-			String kubeClientFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_CLIENT_SCRIPT;			
+			String kubeClientFile = dBean.getFolderPath() + "/" + DockerKubeConstants.KUBE_PATH_CLIENT_SCRIPT;
 			String kubeClientScript = util.getFileDetails(kubeClientFile);
 			if (kubeClientScript != null && !"".equals(kubeClientScript)) {
 				bOutput.write(kubeClientScript.getBytes());

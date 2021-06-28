@@ -63,6 +63,43 @@ public class DockerKubeConstants {
 	public static final String WEBUI_DEP_YML="webui";
 	public static final String WEBUI_PORT_DEP_YML="8062";
 	public static final String PROBE_UI_YML="probe-ui";
+	public static final String VOLUME_DEP_YAML="volumes";
+	public static final String NAME_VOLUME_DEP_YAML="name";
+	public static final String PVC_DEP_YAML="persistentVolumeClaim";
+	public static final String CLAIM_NAME_DEP_YAML="claimName";
+	public static final String VOLUME_MOUNT_DEP_YAML="volumeMounts";
+	public static final String MOUNT_VOLUME_PATH_DEP_YAML="/data/shared";
+	public static final String NAME_VOLUME_MOUNT_DEP_YAML="name";
+	public static final String ENV_NAME_DEP_YAML="name";
+	public static final String ENV_SHARED_FOLDER_DEP_YAML="SHARED_FOLDER_PATH";
+	public static final String ENV_VALUE_DEP_YAML="value";
+
+
+	
+	
+
+	
+	
+	
+	public static final String APIVERSION_PVC_YML="apiVersion";
+	public static final String APPS_V1_PVC_YML="v1";
+	public static final String KIND_PVC_YML="kind";
+	public static final String PESISTENT_VOLUME_CLAIM_PVC_YML="PersistentVolumeClaim";
+	public static final String METADATA_PVC_YML="metadata";
+	public static final String NAME_PVC_YML="name";
+	public static final String MYMODEL_PVC_YML="myPVC";
+	public static final String SPEC_PVC_YAML="spec";
+	public static final String STORAGECLASSNAME_PVC_YAML="storageClassName";
+	public static final String ACCESSMODES_PVC_YAML="accessModes";
+	public static final String READ_WRITE_ONCE_PVC_YAML="ReadWriteOnce";
+	public static final String RESOURCES_PVC_YAML="resources";
+	public static final String REQUESTS_PVC_YAML="requests";
+	public static final String STORAGE_PVC_YAML="storage";
+	public static final String ONE_GI_STORAGE_PVC_YAML="1Gi";
+	public static final String TWO_GI_STORAGE_PVC_YAML="2Gi";
+	public static final String FIVE_GI_STORAGE_PVC_YAML="5Gi";
+	public static final String TEN_GI_STORAGE_PVC_YAML="10Gi";
+	public static final String PVC_NAME_YAML="pipeline";
 	
 	
 	

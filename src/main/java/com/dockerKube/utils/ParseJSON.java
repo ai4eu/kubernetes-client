@@ -30,6 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.sound.midi.Soundbank;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -551,6 +553,177 @@ public class ParseJSON {
 		log.debug("jsonArrayParseObjectProb End");
 		return listComponent;
 	}
+	
+	
+	
+	/// This method is used to get all the container which have the attached volume.
+	//Key node_type, and Value is sharedfolder
+	
+	/**
+	 * getProtoDetails method is used to get prob details
+	 * 
+	 * @param jsonString - json string for parse
+	 * @throws Exception - exception thrown
+	 * @return contList - container list
+	 */
+	public String removeSharedFolder(String jsonString) throws Exception {
+		
+		
+		log.debug("getProtoDetails Start");
+		log.debug("jsonString " + jsonString);
+		JSONArray nodes;
+		HashMap<String, String> imageMap = new HashMap<String, String>();
+		ArrayList<String> list = new ArrayList<String>();
+		List<ContainerBean> contList = new ArrayList<ContainerBean>();
+		try {
+			Object obj = new JSONParser().parse(new StringReader(jsonString));
+			Iterator<Map.Entry> itr1 = null;
+			JSONObject jo = (JSONObject) obj;
+			System.out.println(jo.keySet());
+			System.out.println(jo.size());
+			
+			nodes = (JSONArray) jo.get(DockerKubeConstants.NODES);
+			
+			ArrayList<Node> nodeList = new ArrayList<Node>();
+			if (nodes != null) {
+				Iterator itr3 = nodes.iterator();
+				int nodeCount = 0;
+				while (itr3.hasNext()) {
+					Node node = new Node();
+					itr1 = ((Map) itr3.next()).entrySet().iterator();
+					
+					String containerName = null, imageName = null, protoUri = null, protoUriFile = null,
+							protoUriFolder = null;
+					
+					String nodeType = "";
+					while (itr1.hasNext()) {
+
+						Map.Entry pair = itr1.next();
+						
+						// Remove this condition to get the names of containers.
+						
+						if (pair != null && pair.getKey() != null && pair.getValue() != null) {
+							String key = (String) pair.getKey();
+							
+							if (key != null && key.equalsIgnoreCase(DockerKubeConstants.NODE_TYPE)) {
+								nodeType = (String) pair.getValue();
+								if(nodeType.contains("SharedFolder")) {
+									nodes.remove(nodeCount);
+									jo.put("nodes", nodes);
+									return jo.toString();
+								}
+								
+								
+							}
+
+						}
+					}
+
+					log.debug("Nodes" + ++nodeCount);
+				}
+			}
+
+		} catch (Exception e) {
+			log.error("getProtoDetails failed", e);
+			throw new Exception(e.getMessage());
+		}
+		log.debug("imageMap " + imageMap);
+		log.debug(" getProtoDetails End");
+	    System.out.println(jsonString);
+		return jsonString;
+	}
+
+	
+	/// This method is used to get all the container which have the attached volume.
+	//Key node_type, and Value is sharedfolder
+	
+	/**
+	 * getSharedFolderContainerName method is used to get container name
+	 * 
+	 * @param jsonString - json string for parse
+	 * @throws Exception - exception thrown
+	 * @return conName - name of container container 
+	 */
+	public String getSharedFolderContainerName(String jsonString) throws Exception {
+		
+		
+		log.debug("getProtoDetails Start");
+		log.debug("jsonString " + jsonString);
+		JSONArray nodes;
+		HashMap<String, String> imageMap = new HashMap<String, String>();
+		ArrayList<String> list = new ArrayList<String>();
+		List<ContainerBean> contList = new ArrayList<ContainerBean>();
+		try {
+			Object obj = new JSONParser().parse(new StringReader(jsonString));
+			Iterator<Map.Entry> itr1 = null;
+			JSONObject jo = (JSONObject) obj;
+			System.out.println(jo.keySet());
+			System.out.println(jo.size());
+			
+			nodes = (JSONArray) jo.get(DockerKubeConstants.NODES);
+			
+			ArrayList<Node> nodeList = new ArrayList<Node>();
+			if (nodes != null) {
+				Iterator itr3 = nodes.iterator();
+				int nodeCount = 0;
+				boolean flage = false;
+				while (itr3.hasNext()) {
+					Node node = new Node();
+					itr1 = ((Map) itr3.next()).entrySet().iterator();
+					
+					String containerName = null, imageName = null, protoUri = null, protoUriFile = null,
+							protoUriFolder = null;
+					;
+					String nodeType = "";
+					while (itr1.hasNext()) {
+
+						Map.Entry pair = itr1.next();
+						
+						// Remove this condition to get the names of containers.
+						
+						if (pair != null && pair.getKey() != null && pair.getValue() != null) {
+							String key = (String) pair.getKey();
+							
+							if (key != null && key.equalsIgnoreCase(DockerKubeConstants.CONTAINER_NAME)) {
+								containerName = (String) pair.getValue();
+							}
+							
+							if (key != null && key.equalsIgnoreCase(DockerKubeConstants.NODE_TYPE)) {
+								nodeType = (String) pair.getValue();
+								if(nodeType.contains("SharedFolder")) {
+									flage = true;
+								}
+								
+							}
+
+						}
+					}
+					if (flage) {
+						return containerName;
+					}
+
+					log.debug("Nodes" + ++nodeCount);
+				}
+			}
+
+		} catch (Exception e) {
+			log.error("getProtoDetails failed", e);
+			throw new Exception(e.getMessage());
+		}
+		log.debug("imageMap " + imageMap);
+		log.debug(" getProtoDetails End");
+	    System.out.println(jsonString);
+		return "";
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
 
 	/**
 	 * getProtoDetails method is used to get prob details
@@ -562,6 +735,9 @@ public class ParseJSON {
 	public List<ContainerBean> getProtoDetails(String jsonString) throws Exception {
 		log.debug("getProtoDetails Start");
 		log.debug("jsonString " + jsonString);
+		
+		//jsonString = removeSharedFolder(jsonString);
+		
 		HashMap<String, String> imageMap = new HashMap<String, String>();
 		ArrayList<String> list = new ArrayList<String>();
 		List<ContainerBean> contList = new ArrayList<ContainerBean>();
@@ -573,6 +749,9 @@ public class ParseJSON {
 			ArrayList<Node> nodeList = new ArrayList<Node>();
 			if (nodes != null) {
 				Iterator itr3 = nodes.iterator();
+		      
+                // nodes.remove = "SharedFolder"
+				
 				int nodeCount = 0;
 				while (itr3.hasNext()) {
 					Node node = new Node();
@@ -583,7 +762,7 @@ public class ParseJSON {
 					;
 					String nodeType = "";
 					while (itr1.hasNext()) {
-
+                       
 						Map.Entry pair = itr1.next();
 						if (pair != null && pair.getKey() != null && pair.getValue() != null) {
 							String key = (String) pair.getKey();
@@ -692,7 +871,7 @@ public class ParseJSON {
 						dbean.setNodeType(nodeType);
 						deploymentKubeBeanList.add(dbean);
 						imageMap.put(imageName, containerName);
-						System.out.println("Sajid Naeem : ");
+
 					}
 
 				}

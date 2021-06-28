@@ -29,7 +29,7 @@ import com.dockerKube.beans.DeploymentBean;
 
 public interface KubeService {
 
-	public ByteArrayOutputStream getBluePrintNexus(String solutionId, String revisionId,String datasource,String userName,String dataPd,
+	public String getBluePrintNexus(String solutionId, String revisionId,String datasource,String userName,String dataPd,
 			String nexusUrl,String nexusUserName,String nexusPd) throws  Exception;
 	public ByteArrayOutputStream getBluePrintNexusSingleSolution(String solutionId, String revisionId,String datasource,String userName,String dataPd,
 			String nexusUrl,String nexusUserName,String nexusPd) throws  Exception;
